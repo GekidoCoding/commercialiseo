@@ -1,0 +1,255 @@
+<div class="main-content">
+  <ngx-spinner
+    bdColor="rgba(0 , 0 , 0 , 0.8)"
+    size="medium"
+    color="#fff"
+    type="ball-spin-clockwise"
+    [fullScreen]="false"
+    *ngIf="isLoading"
+  >
+  </ngx-spinner>
+  <!-- Table Title -->
+  <div class="table-title">User Management</div>
+
+  <div class="list-container">
+
+    <!-- Table Controls -->
+    <div class="table-controls">
+      <div class="entries-select">
+        <label>Show</label>
+        <select [(ngModel)]="itemsPerPage" (ngModelChange)="changePage(1)">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        <span>entries</span>
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="btn btn-add" (click)="openAddModal(addModal)" title="Add new entry">
+          <i class="fa fa-plus"></i> Add
+        </button>
+        <button type="button" class="btn btn-select" (click)="toggleSelectionMode()" title="{{ isSelectionMode ? 'Cancel selection' : 'Select entries' }}">
+          <i class="fa" [ngClass]="isSelectionMode ? 'fa-times' : 'fa-check-square'"></i> {{ isSelectionMode ? 'Cancel' : 'Select' }}
+        </button>
+        <button type="button" class="btn btn-delete" (click)="openDeleteModal(deleteModal)" title="Delete selected entries" [disabled]="selectedCount === 0" *ngIf="isSelectionMode">
+          <i class="fa fa-trash"></i>
+        </button>
+        <button type="button" class="btn btn-search" (click)="toggleSearchForm()" title="Toggle search form">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="search-form slide-in-out" *ngIf="showSearchForm">
+      <form #searchForm="ngForm" (ngSubmit)="applySearch()">
+        <div class="form-row">
+          <div class="form-group col-md-3 col-12">
+            <label>ID</label>
+            <input type="number" class="form-control" [(ngModel)]="searchCriteria.id" name="id" (input)="applySearchDebounced()">
+          </div>
+          <div class="form-group col-md-3 col-12">
+            <label>Name</label>
+            <input type="text" class="form-control" [(ngModel)]="searchCriteria.name" name="name" (input)="applySearchDebounced()">
+          </div>
+          <div class="form-group col-md-3 col-12">
+            <label>Date Expiration</label>
+            <input type="date" class="form-control" [(ngModel)]="searchCriteria.date_exp" name="date_exp" (change)="applySearchDebounced()">
+          </div>
+          <div class="form-group col-md-3 col-12">
+            <label>Birthday</label>
+            <input type="date" class="form-control" [(ngModel)]="searchCriteria.birthday" name="birthday" (change)="applySearchDebounced()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-3 col-12">
+            <button type="button" class="btn btn-grey" (click)="toggleSearchForm()">Close</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- CRUD Table -->
+    <div class="table-responsive">
+      <table class="table table-normal">
+        <thead>
+        <tr>
+          <th *ngIf="isSelectionMode" class="checkbox-column">
+            <input type="checkbox" [(ngModel)]="selectAll" (ngModelChange)="toggleSelectAll()">
+          </th>
+          <th class="sortable" (click)="sortByColumn('id')">
+            ID
+            <i class="fas" [ngClass]="{
+                'fa-sort-up': sortConfig.column === 'id' && sortConfig.order === 'asc',
+                'fa-sort-down': sortConfig.column === 'id' && sortConfig.order === 'desc',
+                'fa-sort': sortConfig.column !== 'id' || !sortConfig.order
+              }"></i>
+          </th>
+          <th class="sortable" (click)="sortByColumn('name')">
+            Name
+            <i class="fas" [ngClass]="{
+                'fa-sort-up': sortConfig.column === 'name' && sortConfig.order === 'asc',
+                'fa-sort-down': sortConfig.column === 'name' && sortConfig.order === 'desc',
+                'fa-sort': sortConfig.column !== 'name' || !sortConfig.order
+              }"></i>
+          </th>
+          <th class="sortable" (click)="sortByColumn('date_exp')">
+            Date Expiration
+            <i class="fas" [ngClass]="{
+                'fa-sort-up': sortConfig.column === 'date_exp' && sortConfig.order === 'asc',
+                'fa-sort-down': sortConfig.column === 'date_exp' && sortConfig.order === 'desc',
+                'fa-sort': sortConfig.column !== 'date_exp' || !sortConfig.order
+              }"></i>
+          </th>
+          <th class="sortable" (click)="sortByColumn('birthday')">
+            Birthday
+            <i class="fas" [ngClass]="{
+                'fa-sort-up': sortConfig.column === 'birthday' && sortConfig.order === 'asc',
+                'fa-sort-down': sortConfig.column === 'birthday' && sortConfig.order === 'desc',
+                'fa-sort': sortConfig.column !== 'birthday' || !sortConfig.order
+              }"></i>
+          </th>
+          <th class="action-column"> </th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let item of filteredItems; let i = index">
+          <tr class="row-animation" [ngClass]="{'row-animation-delay': i > 0}" [attr.data-index]="i">
+            <td *ngIf="isSelectionMode" class="checkbox-column">
+              <input type="checkbox" [(ngModel)]="selectedIds[item.id]" (ngModelChange)="updateSelectAll()">
+            </td>
+            <td class="id-column">{{item.id}}</td>
+            <td class="name-column">{{item.name}}</td>
+            <td class="date-exp-column">{{item.date_exp | date:'yyyy-MM-dd'}}</td>
+            <td class="birthday-column">{{item.birthday | date:'yyyy-MM-dd'}}</td>
+            <td class="action-column action-buttons-cell">
+              <button class="btn btn-update" (click)="openUpdateModal(updateModal, item)" title="Edit entry">
+                <i class="fa fa-edit"></i>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+      <div *ngIf="filteredItems.length === 0" class="no-results">No results found.</div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-controls">
+      <div class="pagination-container">
+        <button type="button" class="btn btn-blue btn-arrow" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)" title="Previous page"><</button>
+        <div class="pagination-buttons">
+          <span *ngFor="let page of pageNumbers" class="page-number btn btn-blue page-animation" [class.active]="page === currentPage" (click)="changePage(page)">{{page}}</span>
+        </div>
+        <button type="button" class="btn btn-blue btn-arrow" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)" title="Next page">></button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Add Modal -->
+  <ng-template #addModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Add New User</h5>
+      <button type="button" class="close" (click)="modal.dismiss('Cross click')" aria-label="Close">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form #addForm="ngForm" (ngSubmit)="addItem(); modal.close('Save click')">
+        <div class="form-row">
+          <div class="form-group col-md-6 col-12">
+            <label>Name</label>
+            <input type="text" class="form-control" [(ngModel)]="newItem.name" name="name" required>
+          </div>
+          <div class="form-group col-md-6 col-12">
+            <label>Date Expiration</label>
+            <input type="date" class="form-control" [(ngModel)]="newItem.date_exp" name="date_exp" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6 col-12">
+            <label>Birthday</label>
+            <input type="date" class="form-control" [(ngModel)]="newItem.birthday" name="birthday" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-grey" (click)="modal.dismiss('Cancel click')">Cancel</button>
+          <button type="submit" class="btn btn-blue" [disabled]="addForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+  <!-- Update Modal -->
+  <ng-template #updateModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Update User</h5>
+      <button type="button" class="close" (click)="modal.dismiss('Cross click')" aria-label="Close">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form #updateForm="ngForm" (ngSubmit)="confirmUpdate(modal)">
+        <div class="form-row">
+          <div class="form-group col-md-6 col-12">
+            <label>ID</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedItem.id" name="id" readonly>
+          </div>
+          <div class="form-group col-md-6 col-12">
+            <label>Name</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedItem.name" name="name" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6 col-12">
+            <label>Date Expiration</label>
+            <input type="date" class="form-control" [(ngModel)]="selectedItem.date_exp" name="date_exp" required>
+          </div>
+          <div class="form-group col-md-6 col-12">
+            <label>Birthday</label>
+            <input type="date" class="form-control" [(ngModel)]="selectedItem.birthday" name="birthday" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-grey" (click)="modal.dismiss('Cancel click')">Cancel</button>
+          <button type="submit" class="btn btn-blue" [disabled]="updateForm.invalid">Update</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+  <!-- Delete Confirmation Modal -->
+  <ng-template #deleteModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Confirm Deletion</h5>
+      <button type="button" class="close" (click)="modal.dismiss('Cross click')" aria-label="Close">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Voulez-vous vraiment supprimer <strong>{{ selectedCount }}</strong> élément(s) ?</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-grey" (click)="modal.dismiss('Cancel click')">Cancel</button>
+      <button type="button" class="btn btn-grey" style="color: red" (click)="deleteSelectedItems(modal)">Yes</button>
+    </div>
+  </ng-template>
+
+  <div class="toast-container" *ngIf="showConfirmation">
+    <div class="toast fade-animation" style=" background-color: rgba(0, 131, 6, 0.95); ">
+      {{confirmationMessage}}
+      <button class="toast-close" (click)="closeToast()">&times;</button>
+    </div>
+  </div>
+
+  <div class="toast-container" *ngIf="showError">
+    <div class="toast fade-animation" style=" background-color: rgba(195,35,35,0.93); ">
+      {{errorMessage}}
+      <button class="toast-close" (click)="closeToast()">&times;</button>
+    </div>
+  </div>
+
+</div>

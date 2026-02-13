@@ -1,0 +1,325 @@
+<div class="main-content">
+  <div class="row">
+    <!-- TABLEAU / LIST -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h4>TABLE LISTE NORMAL</h4>
+          <div class="table-responsive">
+            <table class="table table-normal">
+              <thead>
+              <tr>
+                <th class="text-left">N° Dossier</th>
+                <th class="text-left">Date Réception</th>
+                <th class="text-left">Matricule Travailleur</th>
+                <th class="text-left">Nom et Prénom</th>
+                <th class="text-left">Prestation</th>
+                <th class="text-left">Action</th>
+              </tr>
+              </thead>
+              <tbody class="text-center">
+              <ng-container *ngFor="let item of [1,2,3,4]">
+                <tr>
+                  <td class="text-left">123456789</td>
+                  <td class="text-left">12 dec 1990</td>
+                  <td class="text-left">789456</td>
+                  <td class="text-left">RANDRIANANTENAINA CLAUDEMIE</td>
+                  <td class="text-left">NOM PRESTATION</td>
+                  <td class="text-left">
+                    <button type="button" rel="tooltip" class="btn btn-cnaps-box-shadow">
+                      <i class="fa fa-eye pr-2"></i><span class="btn-text">Détail</span>
+                    </button>
+                  </td>
+                </tr>
+              </ng-container>
+              </tbody>
+            </table>
+          </div>
+          <h4>TABLE LISTE MINIMISE</h4>
+          <div class="table-responsive">
+            <table class="table table-bordered table-minimized">
+              <thead>
+              <tr>
+                <th class="text-left">COLONNE 1</th>
+                <th class="text-left">COLONNE 2</th>
+                <th class="text-left">COLONNE 3</th>
+                <th class="text-left">COLONNE 4</th>
+                <th class="text-left">COLONNE 5</th>
+                <th class="text-left">COLONNE 6</th>
+                <th class="text-left">COLONNE 7</th>
+                <th class="text-left">COLONNE 8</th>
+                <th class="text-left">COLONNE 9</th>
+                <th class="text-left">COLONNE 10</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let row of [1,2,3,4,5]">
+                <td class="text-left">LIGNE {{row}}.1</td>
+                <td class="text-left">LIGNE {{row}}.2</td>
+                <td class="text-left">LIGNE {{row}}.3</td>
+                <td class="text-left">LIGNE {{row}}.4</td>
+                <td class="text-left">LIGNE {{row}}.5</td>
+                <td class="text-left">LIGNE {{row}}.6</td>
+                <td class="text-left">LIGNE {{row}}.7</td>
+                <td class="text-left">LIGNE {{row}}.8</td>
+                <td class="text-left">LIGNE {{row}}.9</td>
+                <td class="text-left">LIGNE {{row}}.10</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOUTONS -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h4>BOUTONS</h4>
+          <div class="row">
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-save w-100">
+                <i class="fa fa-save pr-2"></i><span class="btn-text">Enregistrer</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-error w-100">
+                <i class="fa fa-times pr-2"></i><span class="btn-text">Fermer</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-box-shadow w-100">
+                <i class="fa fa-eye pr-2"></i><span class="btn-text">Détail/Afficher/Rechercher</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-link w-100">
+                <i class="fa fa-link pr-2"></i><span class="btn-text">Redirect link</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-other w-100">
+                <i class="fa fa-cog pr-2"></i><span class="btn-text">Autre</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENU -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h4>SECTION / CONTENU / FORMULAIRE</h4>
+          <fieldset>
+            <legend class="legend">
+              <i class="fa fa-save pr-2"></i> FORMULAIRE
+            </legend>
+            <div class="form-row">
+              <div class="form-group col-lg-3 col-md-6 col-12">
+                <label class="text-info">Numéro dossier</label>
+                <input type="text" class="form-control text-uppercase" placeholder="Numéro dossier..." />
+              </div>
+              <div class="form-group col-lg-3 col-md-6 col-12">
+                <label class="text-info">Matricule</label>
+                <input type="text" class="form-control text-uppercase" placeholder="Matricule..." />
+              </div>
+              <div class="form-group col-lg-3 col-md-6 col-12">
+                <label class="text-info">Date réception</label>
+                <input type="text" class="form-control text-uppercase" placeholder="Date réception..." />
+              </div>
+              <div class="form-group col-lg-3 col-md-6 col-12">
+                <label class="text-info">Nature dossier</label>
+                <input type="text" class="form-control text-uppercase" placeholder="Nature dossier..." />
+              </div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend class="legend">
+              <i class="fa fa-list pr-2"></i> CONTENU 1
+            </legend>
+            <div class="form-row">
+              <div class="form-group col-md-6 col-12">
+                <label class="text-info">Element 1</label>
+                <div class="form-control">ELEMENT 1</div>
+              </div>
+              <div class="form-group col-md-6 col-12">
+                <label class="text-info">Element 2</label>
+                <div class="form-control">ELEMENT 2</div>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB MENU -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h4>TAB MENU</h4>
+          <div class="card card-nav-tabs card-plain">
+            <div class="card-header card-header-danger">
+              <div class="nav-tabs-navigation">
+                <div class="nav-tabs-wrapper">
+                  <ul class="nav nav-tabs" data-tabs="tabs">
+                    <li class="nav-item">
+                      <a class="nav-link active" href="#menu1" data-toggle="tab">MENU 1</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#menu2" data-toggle="tab">MENU 2</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#menu3" data-toggle="tab">MENU 3</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#menu4" data-toggle="tab">MENU 4</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="tab-content">
+                <div class="tab-pane active" id="menu1">
+                  <div class="row">
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                    <div class="col-lg-10 col-12">
+                      <fieldset>
+                        <legend class="legend">
+                          <i class="fa fa-user-plus pr-2"></i>CONTENU 1
+                        </legend>
+                        <div class="row">
+                          <div class="col-12">
+                            <h2>What is Lorem Ipsum?</h2>
+                            <p>
+                              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+                              when an unknown printer took a galley of type and scrambled it to make a type
+                              specimen book. It has survived not only five centuries, but also the leap into
+                              electronic typesetting, remaining essentially unchanged. It was popularised in
+                              the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,
+                              and more recently with desktop publishing software like Aldus PageMaker including
+                              versions of Lorem Ipsum.
+                            </p>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                  </div>
+                </div>
+                <div class="tab-pane" id="menu2">
+                  <div class="row">
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                    <div class="col-lg-10 col-12">
+                      <fieldset>
+                        <legend class="legend">
+                          <i class="fa fa-user-plus pr-2"></i>CONTENU 2
+                        </legend>
+                        <div class="row">
+                          <div class="col-12">
+                            <h2>Why do we use it?</h2>
+                            <p>
+                              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+                              when an unknown printer took a galley of type and scrambled it to make a type
+                              specimen book. It has survived not only five centuries, but also the leap into
+                              electronic typesetting, remaining essentially unchanged.
+                            </p>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                  </div>
+                </div>
+                <div class="tab-pane" id="menu3">
+                  <div class="row">
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                    <div class="col-lg-10 col-12">
+                      <fieldset>
+                        <legend class="legend">
+                          <i class="fa fa-user-plus pr-2"></i>CONTENU 3
+                        </legend>
+                        <div class="row">
+                          <div class="col-12">
+                            <h2>Where does it come from?</h2>
+                            <p>
+                              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+                              when an unknown printer took a galley of type and scrambled it to make a type
+                              specimen book.
+                            </p>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                  </div>
+                </div>
+                <div class="tab-pane" id="menu4">
+                  <div class="row">
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                    <div class="col-lg-10 col-12">
+                      <fieldset>
+                        <legend class="legend">
+                          <i class="fa fa-user-plus pr-2"></i>CONTENU 4
+                        </legend>
+                        <div class="row">
+                          <div class="col-12">
+                            <h2>Where can I get some?</h2>
+                            <p>
+                              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+                              when an unknown printer took a galley of type and scrambled it to make a type
+                              specimen book.
+                            </p>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div class="col-lg-1 d-none d-lg-block"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGE / NOTIFICATION -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h4>NOTIFICATION / MESSAGE</h4>
+          <div class="row">
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-box-shadow w-100" (click)="info()">
+                <i class="fa fa-info-circle pr-2"></i><span class="btn-text">Info</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-save w-100" (click)="success()">
+                <i class="fa fa-check pr-2"></i><span class="btn-text">Success</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-warning w-100" (click)="warning()">
+                <i class="fa fa-exclamation-triangle pr-2"></i><span class="btn-text">Warning</span>
+              </button>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
+              <button type="button" rel="tooltip" class="btn btn-cnaps-error w-100" (click)="error()">
+                <i class="fa fa-times pr-2"></i><span class="btn-text">Error</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

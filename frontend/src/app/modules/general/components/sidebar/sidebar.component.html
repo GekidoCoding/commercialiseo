@@ -1,0 +1,22 @@
+<div [ngClass]="{ logo: true, 'hide-sidebar': config?.hideSideBar }"
+  style="background-color: #103373 !important; cursor: pointer">
+  <a class="simple-text logo-mini">
+    <div [ngClass]="{ 'logo-img': true, 'hide-sidebar': config?.hideSideBar }">
+      <img src="assets/img/logocnaps.JPG" />
+    </div>
+  </a>
+  <a class="simple-text logo-normal" style="font-weight: bold; text-transform: none">
+    CNaPS MADAGASCAR
+  </a>
+</div>
+<div [ngClass]="{ 'sidebar-wrapper': true, 'hide-sidebar': config?.hideSideBar }"
+  style="background-color: #103373 !important">
+  <ul class="nav">
+    <li routerLinkActive="active" *ngFor="let menuItem of menuItems" class="{{ menuItem.class }} nav-item">
+      <a [routerLink]="[menuItem.path]" style="font-weight: bold; font-size: 0.8em">
+        <i class="now-ui-icons {{ menuItem.icon }}"></i>
+        <p>{{ menuItem.title }}</p>
+      </a>
+    </li>
+  </ul>
+</div>

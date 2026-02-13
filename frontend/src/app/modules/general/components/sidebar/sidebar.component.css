@@ -1,0 +1,8 @@
+/* .logo-normal:hover{
+    transform: scale(1.02) !important;
+    transition: transform .5s ease !important;
+} */
+.logo-img:hover{
+    transform: scale(1.1) !important;
+    transition: transform .5s ease !important;
+}
