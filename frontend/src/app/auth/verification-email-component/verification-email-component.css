@@ -1,0 +1,369 @@
+/* Variables */
+:root {
+  --green-primary: #059669;
+  --green-dark: #047857;
+  --green-light: #10b981;
+  --green-lighter: #d1fae5;
+}
+
+/* Modal personnalisé */
+::ng-deep .modal-dialog {
+  max-width: 500px !important;
+}
+
+::ng-deep .modal-content {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+::ng-deep .modal-header {
+  background-color: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1.5rem 2rem;
+}
+
+::ng-deep .modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+::ng-deep .btn-close {
+  --bs-btn-close-focus-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.25);
+}
+
+::ng-deep .modal-body {
+  padding: 2.5rem;
+}
+
+::ng-deep .modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 2rem;
+}
+
+/* Container principal */
+.verification-container {
+  background-color: #fff;
+}
+
+/* Header de vérification */
+.verification-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.icon-check {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--green-lighter) 0%, #a7f3d0 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.icon-check svg {
+  color: var(--green-primary);
+}
+
+.verification-subtitle {
+  font-size: 1.25rem;
+  color: #1f2937;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.verification-description {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Formulaire */
+.verification-form {
+  animation: fadeIn 0.3s ease;
+}
+
+.verification-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.verification-form label svg {
+  color: var(--green-primary);
+  flex-shrink: 0;
+}
+
+.code-label {
+  margin-bottom: 1rem;
+}
+
+/* Email input avec bouton modifier */
+.email-input-wrapper {
+  position: relative;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.email-input-wrapper .form-control {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #f9fafb;
+  color: #6b7280;
+}
+
+.email-input-wrapper .form-control:focus {
+  border-color: #d1d5db;
+  box-shadow: none;
+  outline: none;
+}
+
+.btn-edit-email {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit-email:hover {
+  border-color: var(--green-primary);
+  background-color: var(--green-lighter);
+  color: var(--green-primary);
+  transform: translateY(-2px);
+}
+
+.btn-edit-email:active {
+  transform: translateY(0);
+}
+
+/* Inputs du code de vérification */
+.code-inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.code-input {
+  width: 52px;
+  height: 60px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background-color: #f9fafb;
+  color: #1f2937;
+  transition: all 0.3s;
+}
+
+.code-input:focus {
+  outline: none;
+  border-color: var(--green-primary);
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+  transform: scale(1.05);
+}
+
+.code-input:not(:placeholder-shown) {
+  border-color: var(--green-primary);
+  background-color: var(--green-lighter);
+  color: var(--green-dark);
+}
+
+.code-input.error {
+  border-color: #ef4444;
+  background-color: #fee2e2;
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Timer du code */
+.code-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.code-timer svg {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+/* Bouton principal */
+.btn-success {
+  background-color: var(--green-primary);
+  border-color: var(--green-primary);
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: var(--green-dark);
+  border-color: var(--green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.btn-success:focus {
+  background-color: var(--green-dark);
+  border-color: var(--green-dark);
+  box-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.25);
+}
+
+.btn-success:disabled {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Lien de renvoi */
+.resend-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.resend-link p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.resend-link a {
+  color: var(--green-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.resend-link a:not(.disabled):hover {
+  color: var(--green-dark);
+  text-decoration: underline;
+}
+
+.resend-link a.disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  ::ng-deep .modal-dialog {
+    max-width: 95% !important;
+    margin: 0.5rem auto;
+  }
+
+  ::ng-deep .modal-body {
+    padding: 2rem 1.5rem;
+  }
+
+  ::ng-deep .modal-header,
+  ::ng-deep .modal-footer {
+    padding: 1rem 1.5rem;
+  }
+
+  ::ng-deep .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .verification-subtitle {
+    font-size: 1.125rem;
+  }
+
+  .verification-description {
+    font-size: 0.875rem;
+  }
+
+  .icon-check {
+    width: 56px;
+    height: 56px;
+  }
+
+  .icon-check svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .code-inputs {
+    gap: 0.375rem;
+  }
+
+  .code-input {
+    width: 44px;
+    height: 54px;
+    font-size: 1.375rem;
+  }
+
+  .email-input-wrapper {
+    flex-direction: column;
+  }
+
+  .btn-edit-email {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .code-inputs {
+    gap: 0.25rem;
+  }
+
+  .code-input {
+    width: 38px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
