@@ -1,19 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { RegisterComponent } from '../register-component/register-component';
+import {AuthService} from '../../services/auth-service';
+import { ChangeDetectorRef } from '@angular/core';
+import {ForgetPassword} from '../forget-password/forget-password';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login-component.html',
   styleUrls: ['./login-component.css'],
-  standalone:false
+  standalone: false
 })
 export class LoginComponent implements OnInit {
 
-  constructor(public modalService: NgbModal) {}
+  errorMessage: string = '';
+
+  constructor(
+    public modalService: NgbModal,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.initializePasswordToggle();
-    this.initializeRegisterLink();
   }
 
   /**
@@ -37,7 +46,7 @@ export class LoginComponent implements OnInit {
             // Icône œil barré
             icon.innerHTML = `
               <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-              <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
             `;
           } else {
             // Icône œil normal
@@ -48,25 +57,7 @@ export class LoginComponent implements OnInit {
           }
         }
       });
-    }, 100);
-  }
-
-  /**
-   * Initialise le lien vers l'inscription
-   */
-  private initializeRegisterLink(): void {
-    setTimeout(() => {
-      const registerLink = document.getElementById('registerLink');
-      if (registerLink) {
-        registerLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          // Ici vous pouvez ouvrir le modal d'inscription
-          alert('Redirection vers l\'inscription - Ouvrir RegisterComponent');
-          // Exemple : this.modalService.dismissAll();
-          // this.modalService.open(RegisterComponent);
-        });
-      }
-    }, 100);
+    }, 0);
   }
 
   /**
@@ -74,6 +65,7 @@ export class LoginComponent implements OnInit {
    */
   onSubmit(event: Event): void {
     event.preventDefault();
+    this.errorMessage = ''; // Réinitialiser le message d'erreur
 
     const form = event.target as HTMLFormElement;
     const email = (form.querySelector('#email') as HTMLInputElement).value;
@@ -82,48 +74,61 @@ export class LoginComponent implements OnInit {
 
     // Validation
     if (!email || !password) {
-      alert('Veuillez remplir tous les champs');
+      this.errorMessage = 'Veuillez remplir tous les champs';
       return;
     }
 
     if (!this.isValidEmail(email)) {
-      alert('Veuillez entrer une adresse email valide');
+      this.errorMessage = 'Veuillez entrer une adresse email valide';
       return;
     }
 
-    // Simulation de connexion
-    console.log('Connexion:', { email, password, remember });
-    alert('Connexion réussie ! Bienvenue sur ShopMada 🎉');
+    // Appel API pour connexion
+    this.authService.login(email, password, remember).subscribe({
+      next: (response: any) => {
+        console.log('Connexion réussie:', response);
+        alert('Connexion réussie ! Bienvenue sur Commersialiseo ');
+        this.modalService.dismissAll();
+      },
+      error: (err: { message: string; }) => {
+        const apiMessage = err.message || '';
+        if (apiMessage.includes('Utilisateur')) {
+          this.errorMessage = 'Email inexistant, inscrivez-vous';
+        } else if (apiMessage.includes('Mot de passe')) {
+          this.errorMessage = 'Mot de passe incorrect';
+        } else {
+          this.errorMessage = 'Erreur de connexion. Veuillez réessayer.';
+        }
+        this.cdr.detectChanges(); // Force la détection des changements
+      }
+    });
+  }
 
+  /**
+   * Ouvre le modal d'inscription
+   */
+  openRegister(): void {
     this.modalService.dismissAll();
-  }
-
-  /**
-   * Connexion avec Google
-   */
-  onGoogleLogin(): void {
-    console.log('Connexion avec Google');
-    alert('Connexion avec Google en cours...');
-    // Implémenter l'authentification Google OAuth2
-  }
-
-  /**
-   * Connexion avec Facebook
-   */
-  onFacebookLogin(): void {
-    console.log('Connexion avec Facebook');
-    alert('Connexion avec Facebook en cours...');
-    // Implémenter l'authentification Facebook
+    this.modalService.open(RegisterComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false,
+      size: 'xl'  // ou 'lg'
+    });
   }
 
   /**
    * Mot de passe oublié
    */
   onForgotPassword(): void {
-    alert('Un email de réinitialisation va vous être envoyé');
-    // Implémenter la logique de récupération de mot de passe
+    this.modalService.dismissAll();
+    this.modalService.open(ForgetPassword, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false,
+      size: 'xl'  // ou 'lg'
+    });
   }
-
   /**
    * Valide le format de l'email
    */

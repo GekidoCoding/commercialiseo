@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {RegisterComponent} from './register-component/register-component';
-import {LoginComponent} from './login-component/login-component';
-import {VitrineComponent} from './vitrine-component/vitrine-component';
+import {RegisterComponent} from './components/register-component/register-component';
+import {LoginComponent} from './components/login-component/login-component';
+import {VitrineComponent} from './pages/vitrine-component/vitrine-component';
 
 const routes: Routes = [
   { path: '', component: VitrineComponent },
