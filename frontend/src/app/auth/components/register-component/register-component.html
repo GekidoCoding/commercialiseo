@@ -1,0 +1,306 @@
+<div class="modal-header">
+  <h4 class="modal-title">Créer un compte</h4>
+  <button type="button" class="btn-close" (click)="modalService.dismissAll()"></button>
+</div>
+
+<div class="modal-body">
+  <div class="register-container">
+    <!-- Formulaire à gauche -->
+    <div class="register-form-section">
+      <div class="register-header">
+        <h5 class="register-subtitle">Inscrivez-vous en seulement 2 étapes</h5>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="showError" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="showError = false"></button>
+      </div>
+
+      <form class="register-form" (ngSubmit)="onSubmit($event)">
+        <div class="form-group">
+          <label for="email">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            [(ngModel)]="user.email"
+            name="email"
+            placeholder="votre@email.com"
+            [class.is-invalid]="user.email.length > 0 && !isEmailValid()"
+            [class.is-valid]="user.email.length > 0 && isEmailValid()"
+            required
+          >
+          <div *ngIf="user.email.length > 0 && !isEmailValid()" class="invalid-feedback">
+            Veuillez entrer une adresse email valide
+          </div>
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="username">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Nom d'utilisateur
+          </label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            [(ngModel)]="user.username"
+            name="username"
+            placeholder="Jean Bernard"
+            required
+          >
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="role">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <polyline points="17 11 19 13 23 9"/>
+            </svg>
+            Type de compte
+          </label>
+            <select  class="form-control" [(ngModel)]="role">
+              <option
+                *ngFor="let role of user.roles" [value]="role"
+              > {{role}} </option>
+            </select>
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Mot de passe
+          </label>
+          <div class="password-wrapper">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              class="form-control"
+              [(ngModel)]="user.password"
+              name="password"
+              (input)="onPasswordChange()"
+              placeholder="Minimum 8 caractères"
+              required
+            >
+            <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
+              <svg *ngIf="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Indicateur de force du mot de passe -->
+          <div class="password-strength-indicator">
+            <div class="strength-bar">
+              <div
+                class="strength-fill"
+                [style.width]="passwordStrength.width"
+                [style.background-color]="passwordStrength.color"
+              ></div>
+            </div>
+            <small
+              class="strength-text"
+              [style.color]="passwordStrength.color"
+            >
+              {{ passwordStrength.label }}
+            </small>
+          </div>
+
+          <!-- Message de validation du mot de passe -->
+          <div *ngIf="user.password.length > 0 && !isPasswordValid()" class="invalid-feedback d-block">
+            {{ getPasswordValidationMessage() }}
+          </div>
+
+          <!-- Critères du mot de passe -->
+          <div *ngIf="user.password.length > 0" class="password-requirements mt-2">
+            <small class="d-block" [class.text-success]="hasMinLength()" [class.text-muted]="!hasMinLength()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" *ngIf="hasMinLength()"/>
+                <circle cx="12" cy="12" r="10" *ngIf="!hasMinLength()"/>
+              </svg>
+              Minimum 8 caractères
+            </small>
+            <small class="d-block" [class.text-success]="hasUpperCase()" [class.text-muted]="!hasUpperCase()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" *ngIf="hasUpperCase()"/>
+                <circle cx="12" cy="12" r="10" *ngIf="!hasUpperCase()"/>
+              </svg>
+              Au moins une majuscule
+            </small>
+            <small class="d-block" [class.text-success]="hasNumbers()" [class.text-muted]="!hasNumbers()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" *ngIf="hasNumbers()"/>
+                <circle cx="12" cy="12" r="10" *ngIf="!hasNumbers()"/>
+              </svg>
+              Au moins un chiffre
+            </small>
+            <small class="d-block" [class.text-success]="hasSpecialChars()" [class.text-muted]="!hasSpecialChars()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" *ngIf="hasSpecialChars()"/>
+                <circle cx="12" cy="12" r="10" *ngIf="!hasSpecialChars()"/>
+              </svg>
+              Au moins un caractère spécial
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="confirmPassword">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Confirmer le mot de passe
+          </label>
+          <div class="password-wrapper">
+            <input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              id="confirmPassword"
+              class="form-control"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              placeholder="Confirmez votre mot de passe"
+              required
+            >
+            <button type="button" class="password-toggle" (click)="toggleConfirmPasswordVisibility()">
+              <svg *ngIf="!showConfirmPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showConfirmPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Message d'erreur si les mots de passe ne correspondent pas -->
+          <div *ngIf="confirmPassword.length > 0 && !passwordsMatch()" class="invalid-feedback d-block">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            Les mots de passe ne correspondent pas
+          </div>
+
+          <!-- Message de validation si les mots de passe correspondent -->
+          <div *ngIf="confirmPassword.length > 0 && passwordsMatch()" class="valid-feedback d-block">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Les mots de passe correspondent
+          </div>
+        </div>
+
+        <div class="form-check mt-3">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="terms"
+            [(ngModel)]="termsAccepted"
+            name="terms"
+            required
+          >
+          <label class="form-check-label" for="terms">
+            J'accepte les <a href="#" target="_blank">conditions d'utilisation</a>
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-success w-100 mt-4"
+          [disabled]="!isFormValid() || isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Créer mon compte
+          </span>
+          <span *ngIf="isSubmitting">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Création en cours...
+          </span>
+        </button>
+      </form>
+
+      <div class="login-link">
+        <p>Vous avez déjà un compte ? <a (click)="openConnexion()" style="cursor: pointer;">Se connecter</a></p>
+      </div>
+    </div>
+
+    <!-- Photo inspirante à droite -->
+    <div class="register-image-section">
+      <div class="image-wrapper">
+        <img
+          src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500&h=700&fit=crop"
+          alt="Rejoignez notre communauté"
+        >
+        <div class="image-overlay">
+          <div class="overlay-content">
+            <div class="icon-badge">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <h3>Rejoignez 2000+ clients satisfaits</h3>
+            <p>Commencez votre expérience d'achat en ligne dès aujourd'hui</p>
+            <div class="features-list">
+              <div class="feature-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Livraison rapide</span>
+              </div>
+              <div class="feature-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Paiement sécurisé</span>
+              </div>
+              <div class="feature-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Support 24/7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-outline-secondary" (click)="modalService.dismissAll()">Fermer</button>
+</div>

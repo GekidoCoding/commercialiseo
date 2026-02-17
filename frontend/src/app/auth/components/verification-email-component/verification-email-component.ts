@@ -1,5 +1,8 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import {Component, Input, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {AuthService} from '../../services/auth-service';
+import {LoginComponent} from '../login-component/login-component';
+import {RegisterComponent} from '../register-component/register-component';
 
 @Component({
   selector: 'app-email-verification',
@@ -10,20 +13,27 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 export class VerificationEmailComponent implements OnInit, OnDestroy {
 
   @Input() email: string = '';
-
   verificationCode: string[] = ['', '', '', '', '', '', ''];
-  timeRemaining: number = 600; // 10 minutes en secondes (600 secondes)
+  timeRemaining: number = 240; // 4 minutes en secondes (240 secondes)
   timerInterval: any;
 
   resendDisabled: boolean = true;
-  resendCountdown: number = 60; // 60 secondes avant de pouvoir renvoyer
   resendInterval: any;
 
-  constructor(public modalService: NgbModal) {}
+  // États du formulaire
+  isSubmitting: boolean = false;
+  isSuccess: boolean = false;
+  showError: boolean = false;
+  errorMessage: string = '';
+
+  constructor(
+    public modalService: NgbModal,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.startTimer();
-    this.startResendCountdown();
 
     // Focus sur le premier input
     setTimeout(() => {
@@ -39,7 +49,7 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Démarre le timer du code de vérification (10 minutes)
+   * Démarre le timer du code de vérification (4 minutes)
    */
   private startTimer(): void {
     this.timerInterval = setInterval(() => {
@@ -47,28 +57,13 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
 
       if (this.timeRemaining <= 0) {
         clearInterval(this.timerInterval);
-        alert('Le code de vérification a expiré après 10 minutes. Le modal va se fermer.');
-        // Ferme automatiquement le modal après 10 minutes
-        this.modalService.dismissAll();
+        this.showError = true;
+        this.errorMessage = 'Le code de vérification a expiré. Veuillez en demander un nouveau.';
+        this.clearCodeInputs();
       }
     }, 1000); // Décompte chaque seconde
   }
 
-  /**
-   * Démarre le countdown pour réactiver le bouton de renvoi (60 secondes)
-   */
-  private startResendCountdown(): void {
-    this.resendInterval = setInterval(() => {
-      if (this.resendCountdown > 0) {
-        this.resendCountdown--;
-      }
-
-      if (this.resendCountdown <= 0) {
-        this.resendDisabled = false;
-        clearInterval(this.resendInterval);
-      }
-    }, 1000); // Décompte chaque seconde
-  }
 
   /**
    * Nettoie tous les timers
@@ -202,33 +197,53 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
   onSubmit(event: Event): void {
     event.preventDefault();
 
+    // Réinitialiser les erreurs
+    this.showError = false;
+    this.errorMessage = '';
+
     if (!this.isCodeComplete()) {
-      alert('Veuillez entrer le code complet');
+      this.showError = true;
+      this.errorMessage = 'Veuillez entrer le code complet';
       return;
     }
 
     const code = this.getFullCode();
-    console.log('Code de vérification:', code);
-    console.log('Email:', this.email);
+    this.isSubmitting = true;
 
-    // Simulation de la vérification
-    // Remplacer par l'appel API réel
-    this.verifyCode(code);
-  }
+    // Appel au service de vérification
+    this.authService.verifyCode(this.email, code).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
+        this.isSuccess = true;
 
-  /**
-   * Vérifie le code auprès du backend
-   */
-  private verifyCode(code: string): void {
-    // TODO: Appel API pour vérifier le code
-    // Simulation pour démonstration
-    if (code === '1234567') {
-      alert('Email vérifié avec succès ! 🎉');
-      this.modalService.dismissAll();
-    } else {
-      alert('Code incorrect. Veuillez réessayer.');
-      this.clearCodeInputs();
-    }
+        // Animation de succès puis fermeture du modal après 3 secondes
+        setTimeout(() => {
+          // 1. Fermer le modal de vérification
+          this.modalService.dismissAll();
+          alert("✅ Compte créé avec succès ! ");
+          this.openConnexion();
+        }, 3000);
+      },
+      error: (error) => {
+        this.isSubmitting = false;
+        this.showError = true;
+
+        // Gestion des différents types d'erreurs
+        const errorMsg = error.message || error;
+
+        if (errorMsg.includes('Code expiré')) {
+          this.errorMessage = 'Le code a expiré. Veuillez en demander un nouveau.';
+        } else if (errorMsg.includes('Code invalide')) {
+          this.errorMessage = 'Code incorrect. Veuillez réessayer.';
+          this.clearCodeInputs();
+        } else if (errorMsg.includes('Erreur serveur')) {
+          this.errorMessage = 'Erreur serveur, veuillez réessayer plus tard.';
+        } else {
+          this.errorMessage = 'Une erreur est survenue lors de la vérification.';
+        }
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   /**
@@ -240,8 +255,8 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
       const input = document.getElementById(`code-${i}`) as HTMLInputElement;
       if (input) {
         input.value = '';
-        input.classList.add('error');
-        setTimeout(() => input.classList.remove('error'), 300);
+        input.classList.add('error-shake');
+        setTimeout(() => input.classList.remove('error-shake'), 500);
       }
     }
     // Focus sur le premier input
@@ -258,6 +273,8 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
     const newEmail = prompt('Entrez votre nouvelle adresse email:', this.email);
     if (newEmail && this.isValidEmail(newEmail)) {
       this.email = newEmail;
+      this.showError = false;
+      this.errorMessage = '';
       alert('Email mis à jour. Un nouveau code va vous être envoyé.');
       this.onResendCode(new Event('click'));
     } else if (newEmail) {
@@ -268,29 +285,39 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
   /**
    * Renvoie un nouveau code de vérification
    */
+
   onResendCode(event: Event): void {
     event.preventDefault();
+    console.log( "resend code :"+this.email);
+    this.authService.sendCodePassword(this.email,false).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
+        console.log('envoi réussie:', response);
+      },
+      error: (error) => {
+        this.isSubmitting = false;
+        this.showError = true;
 
-    if (this.resendDisabled) {
-      return;
-    }
+        // Gestion des différents types d'erreurs
+        const errorMsg = error.message || error;
 
-    console.log('Renvoi du code à:', this.email);
+        if (errorMsg && errorMsg !== '') { // Corrigé : Condition simplifiée (évite la redondance)
+          this.errorMessage = errorMsg;
+        } else {
+          this.errorMessage = 'Une erreur est survenue lors de l\'inscription';
+        }
+        this.cdr.detectChanges();
+      }
+    });
 
-    // TODO: Appel API pour renvoyer le code
-    alert('Un nouveau code a été envoyé à ' + this.email);
-
-    // Réinitialise les timers
+    // Réinitialise les timers et le countdown pour le renvoi
     this.clearTimers();
-    this.timeRemaining = 600; // Réinitialise à 10 minutes
-    this.resendCountdown = 60; // Réinitialise à 60 secondes
+    this.timeRemaining = 240;
     this.resendDisabled = true;
     this.startTimer();
-    this.startResendCountdown();
-
-    // Efface les inputs
     this.clearCodeInputs();
   }
+
 
   /**
    * Valide le format de l'email
@@ -298,5 +325,26 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  }
+
+  openConnexion() {
+    this.modalService.dismissAll();
+    this.modalService.open(LoginComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false,
+      size: 'xl'  // ou 'lg'
+    });
+  }
+
+
+  openRegister() {
+    this.modalService.dismissAll();
+    this.modalService.open(RegisterComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false,
+      size: 'xl'  // ou 'lg'
+    });
   }
 }

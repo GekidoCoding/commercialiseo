@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { RegisterComponent } from '../register-component/register-component';
+import { RegisterComponent } from '../../components/register-component/register-component';
 import {NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-bootstrap';
-import {LoginComponent} from '../login-component/login-component';
-import {VerificationEmailComponent} from '../verification-email-component/verification-email-component';
+import {LoginComponent} from '../../components/login-component/login-component';
+import {VerificationEmailComponent} from '../../components/verification-email-component/verification-email-component';
 
 @Component({
   selector: 'app-vitrine-component',
