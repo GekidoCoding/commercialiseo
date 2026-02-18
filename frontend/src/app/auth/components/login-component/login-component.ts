@@ -92,13 +92,10 @@ export class LoginComponent implements OnInit {
       },
       error: (err: { message: string; }) => {
         const apiMessage = err.message || '';
-        if (apiMessage.includes('Utilisateur')) {
-          this.errorMessage = 'Email inexistant, inscrivez-vous';
-        } else if (apiMessage.includes('Mot de passe')) {
-          this.errorMessage = 'Mot de passe incorrect';
-        } else {
-          this.errorMessage = 'Erreur de connexion. Veuillez réessayer.';
+        if (apiMessage || apiMessage!='') {
+            this.errorMessage = apiMessage;
         }
+
         this.cdr.detectChanges(); // Force la détection des changements
       }
     });
