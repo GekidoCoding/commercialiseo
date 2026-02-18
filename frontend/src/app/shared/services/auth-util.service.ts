@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserConnected } from '../model/user.connected';
 import { AuthService } from '../../features/auth/services/auth-service';
-import { firstValueFrom, Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
+import {User} from '../../features/auth/models/User';
 
 @Injectable({ providedIn: 'root' })
 export class AuthUtilService {
@@ -14,79 +13,86 @@ export class AuthUtilService {
   ) {}
 
   /**
-   * Récupère le token et vérifie sa validité
+   * Récupère le token depuis le storage
    */
+  getToken(): string | null {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  }
 
-  async getToken(): Promise<string> {
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    console.log("token in getToken is :" +token);
-    if (!token || token === '') {
+  /**
+   * Récupère le token de manière asynchrone avec vérification
+   */
+  async getTokenAsync(): Promise<string> {
+    const isValid = await this.verifyToken();
+    if (!isValid) {
+      return '';
+    }
+    return this.getToken() || '';
+  }
+
+  /**
+   * Stocke l'utilisateur connecté dans le storage (localStorage ou sessionStorage)
+   */
+  storeUser(user: User, remember: boolean = false): void {
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem('userData', JSON.stringify({
+      username: user.username,
+      email: user.email,
+      role: user.role
+    }));
+  }
+
+  /**
+   * Récupère l'utilisateur connecté depuis le storage
+   * Si vide, effectue logout et retourne null
+   */
+  getUserFromStorage(): User | null {
+    const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+    if (!userData) {
       this.logout();
-      return '';
+      return null;
     }
 
     try {
-      const payload = await firstValueFrom(this.getPayload(token));
-
-      if (!payload) {
-        this.logout();
-        return '';
-      }
-
-      // Vérifier l'expiration
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp < now) {
-        console.warn('Token expiré');
-        this.logout();
-        return '';
-      }
-
+      const parsed = JSON.parse(userData);
+      const user = new User();
+      user.username = parsed.username || '';
+      user.email = parsed.email || '';
+      user.setRole(parsed.role || 'acheteur');
+      return user;
     } catch (error) {
-      console.error('Token invalide', error);
-      this.router.navigate(['/auth']);
-      return '';
-    }
-
-    return token;
-  }
-
-  /**
-   * Récupère le payload depuis le backend
-   */
-  getPayload(token: string): Observable<UserConnected | null> {
-    return this.authService.getPayload(token).pipe(
-      map(response => response?.data || null),
-      catchError(error => {
-        console.error('Erreur lors du décodage du token', error);
-        return of(null);
-      })
-    );
-  }
-
-  /**
-   * Retourne l'utilisateur connecté
-   */
-  async getUser(): Promise<UserConnected | null> {
-    const token = await this.getToken();
-    if (!token) return null;
-
-    try {
-      const payload = await firstValueFrom(this.getPayload(token));
-      console.log(payload);
-      return payload;
-    } catch (error) {
-      console.error('Token invalide', error);
-      this.router.navigate(['/auth']);
+      console.error('Erreur lors de la récupération des données utilisateur', error);
+      this.logout();
       return null;
     }
   }
 
   /**
-   * Vérifie si l'utilisateur est connecté
+   * Vérifie si le token est valide via verifyToken
    */
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('authToken') || !!sessionStorage.getItem('authToken');
+  async verifyToken(): Promise<boolean> {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (!token) {
+      this.logout();
+      return false;
+    }
+
+    try {
+      const response = await firstValueFrom(this.authService.verifyToken(token));
+      if (response && response.valid) {
+        return true;
+      }
+      console.warn('Token invalide');
+      this.logout();
+      return false;
+    } catch (error) {
+      console.error('Erreur lors de la vérification du token', error);
+      this.logout();
+      return false;
+    }
   }
+
+
 
   /**
    * Déconnexion
@@ -94,20 +100,19 @@ export class AuthUtilService {
   logout(): void {
     localStorage.removeItem('authToken');
     sessionStorage.removeItem('authToken');
-    this.router.navigate(['/auth']);
+    localStorage.removeItem('userData');
+    sessionStorage.removeItem('userData');
+    this.router.navigate(['/auth']).then(r => console.log(r));
   }
 
   /**
    * Redirige l'utilisateur après login selon son rôle
    */
   async navigateAfterLogin(): Promise<void> {
-    const token = await this.getToken();
-    if (!token) return;
+    const user = this.getUserFromStorage();
+    if (!user) return;
 
-    const payload = await firstValueFrom(this.getPayload(token));
-    if (!payload) return;
-
-    switch (payload.role) {
+    switch (user.role) {
       case 'admin':
         await this.router.navigate(['/admin']);
         break;

@@ -5,6 +5,7 @@ import {AuthService} from '../../services/auth-service';
 import { ChangeDetectorRef } from '@angular/core';
 import {ForgetPassword} from '../forget-password/forget-password';
 import {AuthUtilService} from '../../../../shared/services/auth-util.service';
+import {User} from '../../models/User';
 
 @Component({
   selector: 'app-login',
@@ -88,13 +89,27 @@ export class LoginComponent implements OnInit {
     // Appel API pour connexion
     this.authService.login(email, password, remember).subscribe({
       next: async (response: any) => {
-        // console.log('Connexion réussie:', response.data.token);
+        console.log('Connexion réussie:', response.data);
 
         // Stocker le token avant toute navigation
         if (remember) {
           localStorage.setItem('authToken', response.data.token);
         } else {
           sessionStorage.setItem('authToken', response.data.token);
+        }
+
+        // Stocker les données utilisateur depuis la réponse
+        if (response.data.user) {
+          this.authUtil.storeUser(response.data.user, remember);
+        } else if (response.data.email || response.data.username || response.data.role) {
+          // Créer un utilisateur temporaire avec les données disponibles
+          const tempUser = new User();
+          tempUser.email = response.data.email || email;
+          tempUser.username = response.data.username || '';
+          if (response.data.role) {
+            tempUser.setRole(response.data.role);
+          }
+          this.authUtil.storeUser(tempUser, remember);
         }
 
         try {

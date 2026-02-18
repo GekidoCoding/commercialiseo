@@ -3,4 +3,5 @@ export interface SidebarElement {
   name: string;   // ex: 'Utilisateurs'
   url: string;    // ex: '/admin/users'
   roles: string[]; // ex: ['ADMIN']
+  children?: SidebarElement[];
 }

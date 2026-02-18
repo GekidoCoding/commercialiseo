@@ -97,6 +97,12 @@ export class AuthService {
       catchError(this.handleError)
     );
   }
+  verifyToken(token: string): Observable<any> {
+    const body = { token};
+    return this.http.post<any>(`${this.apiUrl}/verify-token`, body).pipe(
+      catchError(this.handleError)
+    );
+  }
 
   /**
    * Gestion des erreurs HTTP
