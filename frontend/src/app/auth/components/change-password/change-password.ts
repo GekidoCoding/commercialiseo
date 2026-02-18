@@ -194,12 +194,7 @@ export class ChangePassword implements OnInit, OnDestroy {
         this.isSubmitting = false;
         this.showError = true;
         const errorMsg = error.message || 'Une erreur est survenue';
-        if (errorMsg.includes('Code expiré')) {
-          this.errorMessage = 'Le code a expiré. Veuillez en demander un nouveau.';
-        } else if (errorMsg.includes('Code invalide')) {
-          this.errorMessage = 'Code incorrect. Veuillez réessayer.';
-          this.clearCodeInputs();
-        } else {
+        if (errorMsg || errorMsg!='') {
           this.errorMessage = errorMsg;
         }
         this.cdr.detectChanges();
