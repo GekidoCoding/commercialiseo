@@ -38,59 +38,79 @@
 }
 
 /* ============================================
-   TOGGLE BUTTON (hamburger) - POSITIONNÉ À DROITE
+   TOGGLE BUTTON — collé à droite du sidebar
 ============================================ */
 .sidebar-toggle-btn {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  /* Aligné sur la droite du sidebar ouvert (260px) - moitié du bouton dépasse */
+  left: calc(var(--sidebar-width) - 50px);
+  top: 1.25rem;           /* un peu plus haut */
   z-index: 1100;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: none;
+  margin-left: 0.5rem;
+  margin-top: -0.5rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;     /* rond pour mieux "flotter" sur le bord */
+  border: 2px solid rgba(255,255,255,0.25);
   background: var(--green-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 2px 8px rgba(5, 150, 105, 0.4),
+    0 0 0 3px rgba(5, 150, 105, 0.15);
+  /* Transition fluide qui suit le sidebar */
+  transition:
+    left       0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.25s ease,
+    transform  0.2s  ease,
+    box-shadow 0.3s  ease;
+}
+
+/* Quand le sidebar est replié → bouton se déplace avec lui */
+.sidebar-toggle-btn.collapsed {
+  left: calc(var(--sidebar-collapsed) - 19px);
 }
 
 .sidebar-toggle-btn:hover {
   background: var(--green-dark);
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.5);
+  transform: scale(1.1);
+  box-shadow:
+    0 4px 14px rgba(5, 150, 105, 0.5),
+    0 0 0 4px rgba(5, 150, 105, 0.15);
 }
 
-.sidebar-toggle-btn:active {
-  transform: scale(0.95);
-}
+.sidebar-toggle-btn:active { transform: scale(0.93); }
 
-/* Animation du bouton lors de l'ouverture/fermeture */
-.sidebar-toggle-btn.expanded {
-  background: var(--green-dark);
-}
+.sidebar-toggle-btn.expanded { background: var(--green-dark); }
 
-/* Desktop: le bouton reste à droite mais se déplace légèrement */
-@media (min-width: 769px) {
+/* ============================================
+   MOBILE — bouton suit le bord gauche de l'écran
+   quand le sidebar est fermé, positionné en haut à gauche
+============================================ */
+@media (max-width: 768px) {
   .sidebar-toggle-btn {
-    right: 1rem;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                background 0.3s ease, 
-                transform 0.2s ease,
-                box-shadow 0.3s ease;
+    /* Mobile fermé : près du bord gauche */
+    left: 0.75rem;
+    top: 0.875rem;
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    transition:
+      left       0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.25s ease,
+      transform  0.2s  ease;
   }
 
-  /* Quand sidebar est ouverte, le bouton se déplace un peu plus à droite */
+  /* Mobile ouvert : suit le bord droit du sidebar */
   .sidebar-toggle-btn.expanded {
-    right: 1rem;
+    left: calc(var(--sidebar-width) - 19px);
   }
 
-  /* Collapsed state - même position à droite */
-  .sidebar-toggle-btn:not(.expanded) {
-    right: 1rem;
+  /* Pas de .collapsed sur mobile */
+  .sidebar-toggle-btn.collapsed {
+    left: 0.75rem;
   }
 }
 
@@ -149,7 +169,7 @@
   flex-direction: column;
   z-index: 999;
   overflow: hidden;
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 0.35s ease;
   box-shadow: 4px 0 24px rgba(4, 120, 87, 0.18);
@@ -556,13 +576,13 @@
     width: var(--sidebar-width);
     box-shadow: 6px 0 32px rgba(0,0,0,0.3);
   }
-  
+
   /* Animation spécifique pour mobile */
   .sidebar.mobile-hidden {
     transform: translateX(-100%);
     opacity: 0;
   }
-  
+
   .sidebar.mobile-visible {
     transform: translateX(0);
     opacity: 1;
@@ -647,7 +667,7 @@
 
 /* Animation du submenu */
 .sidebar-submenu {
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.3s ease,
               transform 0.3s ease;
   transform-origin: top;
