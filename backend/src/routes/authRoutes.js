@@ -18,6 +18,7 @@ router.post('/login', ...authController.login);
 router.post('/send-codePassword', ...authController.sendCodePassword);
 router.post('/change-password', ...authController.changePassword);
 router.post('/newAccessToken', ...authController.newAccessToken);
+router.post('/payload', ...authController.getPayloadToken);
 
 module.exports = router;
 

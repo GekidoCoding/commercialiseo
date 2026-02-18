@@ -87,25 +87,33 @@ export class LoginComponent implements OnInit {
 
     // Appel API pour connexion
     this.authService.login(email, password, remember).subscribe({
-      next: (response: any) => {
-        console.log('Connexion réussie:', response);
+      next: async (response: any) => {
+        // console.log('Connexion réussie:', response.data.token);
 
-        // alert('Connexion réussie ! Bienvenue sur Commersialiseo ');
+        // Stocker le token avant toute navigation
+        if (remember) {
+          localStorage.setItem('authToken', response.data.token);
+        } else {
+          sessionStorage.setItem('authToken', response.data.token);
+        }
 
-        this.authUtil.navigateAfterLogin();
+        try {
+          // Navigation après login selon le rôle
+          await this.authUtil.navigateAfterLogin();
+          console.log("Navigation réussie !");
+        } catch (err) {
+          console.error("Erreur lors de la navigation :", err);
+        }
 
         this.modalService.dismissAll();
       },
-      error: (err: { message: string; }) => {
-        const apiMessage = err.message || '';
-        if (apiMessage || apiMessage!='') {
-            this.errorMessage = apiMessage;
-        }
-
+      error: (err: { message?: string }) => {
+        this.errorMessage = err.message || 'Erreur lors de la connexion';
         this.cdr.detectChanges(); // Force la détection des changements
       }
     });
   }
+
 
   /**
    * Ouvre le modal d'inscription

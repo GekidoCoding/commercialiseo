@@ -49,6 +49,9 @@ export class AuthService {
       catchError(this.handleError)
     );
   }
+
+
+
   resetPassword(email: string,password:string, code: string): Observable<AuthResponse> {
     const body = { email,password, code };
 
@@ -88,28 +91,11 @@ export class AuthService {
     );
   }
 
-  /**
-   * Vérifie si l'utilisateur est connecté
-   * @returns True si un token existe
-   */
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-
-  /**
-   * Récupère le token stocké
-   * @returns Le token ou null
-   */
-  getToken(): string | null {
-    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-  }
-
-  /**
-   * Déconnecte l'utilisateur en supprimant le token
-   */
-  logout(): void {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
+  getPayload(token: string): Observable<any> {
+    const body = { token};
+    return this.http.post<any>(`${this.apiUrl}/payload`, body).pipe(
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -131,4 +117,6 @@ export class AuthService {
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+
 }
