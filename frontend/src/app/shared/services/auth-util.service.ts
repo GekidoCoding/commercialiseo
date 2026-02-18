@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import {Injectable} from '@angular/core';
+import {Router} from '@angular/router';
 import {UserConnected} from '../model/user.connected';
 
 @Injectable({ providedIn: 'root' })
@@ -11,7 +11,6 @@ export class AuthUtilService {
     let token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
     if (!token) {
-      // Redirection si aucun token
       this.logout();
       return '';
     }
@@ -39,18 +38,25 @@ export class AuthUtilService {
   }
 
 
+  getPayload(token: string) {
+    const payload= JSON.parse(
+      decodeURIComponent(
+        atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
+    );
+    console.log ("Payload token :"+ payload);
+    return payload;
+  }
+
+
   getUser(): UserConnected | null {
     let token = this.getToken();
 
     try {
-      const payload = JSON.parse(
-        decodeURIComponent(
-          atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
-            .split('')
-            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-            .join('')
-        )
-      );
+      const payload = this.getPayload(token);
 
       return {
         email: payload.email,
@@ -73,4 +79,21 @@ export class AuthUtilService {
     sessionStorage.removeItem('authToken');
     this.router.navigate(['/auth']);
   }
+
+  navigateAfterLogin(){
+    const token =this.getToken();
+    if (token) {
+      const payload =this.getPayload(token);
+      if (payload.role === 'admin') {
+        this.router.navigate(['/admin']);
+      } else if (payload.role === 'boutique') {
+        this.router.navigate(['/boutique']);
+      }
+      else  {
+        this.router.navigate(['/acheteur']);
+      }
+    }
+  }
+
+
 }

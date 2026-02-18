@@ -1,1 +1,7 @@
-<p>sidebar.component works!</p>
+<ul>
+  <li *ngFor="let item of menu">
+    <a [routerLink]="item.url">
+      <i [class]="item.icon"></i> {{ item.name }}
+    </a>
+  </li>
+</ul>

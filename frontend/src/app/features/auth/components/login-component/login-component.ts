@@ -4,6 +4,7 @@ import { RegisterComponent } from '../register-component/register-component';
 import {AuthService} from '../../services/auth-service';
 import { ChangeDetectorRef } from '@angular/core';
 import {ForgetPassword} from '../forget-password/forget-password';
+import {AuthUtilService} from '../../../../shared/services/auth-util.service';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ export class LoginComponent implements OnInit {
   constructor(
     public modalService: NgbModal,
     private authService: AuthService,
+    private authUtil:AuthUtilService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -87,7 +89,11 @@ export class LoginComponent implements OnInit {
     this.authService.login(email, password, remember).subscribe({
       next: (response: any) => {
         console.log('Connexion réussie:', response);
-        alert('Connexion réussie ! Bienvenue sur Commersialiseo ');
+
+        // alert('Connexion réussie ! Bienvenue sur Commersialiseo ');
+
+        this.authUtil.navigateAfterLogin();
+
         this.modalService.dismissAll();
       },
       error: (err: { message: string; }) => {

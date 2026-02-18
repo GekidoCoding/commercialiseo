@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Router} from '@angular/router';
 import {SidebarElement} from '../model/sidebar-element.model';
-import {SIDEBAR_ITEMS} from '../config/navigation.config';
+import {SIDEBAR_ITEMS} from '../config/sidebar.items';
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
