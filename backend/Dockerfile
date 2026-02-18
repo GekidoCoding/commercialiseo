@@ -1,5 +1,5 @@
 # Étape 1: Dépendances et build
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Définir le répertoire de travail
 WORKDIR /app
