@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { AuthRoutingModule } from './auth-routing-module';
-import {VitrineComponent} from './pages/vitrine-component/vitrine-component';
 import {NgbModalModule} from '@ng-bootstrap/ng-bootstrap';
+import {VitrineComponent} from './pages/vitrine-component/vitrine-component';
 import {LoginComponent} from './components/login-component/login-component';
 import {VerificationEmailComponent} from './components/verification-email-component/verification-email-component';
 import {FormsModule} from '@angular/forms';
@@ -14,7 +14,7 @@ import {ChangePassword} from './components/change-password/change-password';
 
 @NgModule({
   declarations: [
-    VitrineComponent ,
+    VitrineComponent,
     RegisterComponent,
     LoginComponent,
     VerificationEmailComponent,

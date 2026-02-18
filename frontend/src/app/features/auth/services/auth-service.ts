@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import {environment} from '../../../environments/environment';
+import {environment} from '../../../../environments/environment';
 
 interface AuthResponse {
   message: string;
@@ -49,6 +49,9 @@ export class AuthService {
       catchError(this.handleError)
     );
   }
+
+
+
   resetPassword(email: string,password:string, code: string): Observable<AuthResponse> {
     const body = { email,password, code };
 
@@ -82,33 +85,23 @@ export class AuthService {
         } else {
           sessionStorage.setItem('authToken', response.token);
         }
+
       }),
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Vérifie si l'utilisateur est connecté
-   * @returns True si un token existe
-   */
-  isLoggedIn(): boolean {
-    return !!this.getToken();
+  getPayload(token: string): Observable<any> {
+    const body = { token};
+    return this.http.post<any>(`${this.apiUrl}/payload`, body).pipe(
+      catchError(this.handleError)
+    );
   }
-
-  /**
-   * Récupère le token stocké
-   * @returns Le token ou null
-   */
-  getToken(): string | null {
-    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-  }
-
-  /**
-   * Déconnecte l'utilisateur en supprimant le token
-   */
-  logout(): void {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
+  verifyToken(token: string): Observable<any> {
+    const body = { token};
+    return this.http.post<any>(`${this.apiUrl}/verify-token`, body).pipe(
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -130,4 +123,6 @@ export class AuthService {
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+
 }

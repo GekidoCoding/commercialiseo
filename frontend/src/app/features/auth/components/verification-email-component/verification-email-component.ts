@@ -337,14 +337,4 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
     });
   }
 
-
-  openRegister() {
-    this.modalService.dismissAll();
-    this.modalService.open(RegisterComponent, {
-      centered: true,
-      backdrop: 'static',
-      keyboard: false,
-      size: 'xl'  // ou 'lg'
-    });
-  }
 }

@@ -1,0 +1,211 @@
+<header class="navbar" [class.scrolled]="isScrolled()">
+  <div class="navbar-inner">
+
+
+    <!-- ── Barre de recherche ── -->
+    <div class="search-wrapper" [class.focused]="searchFocused">
+      <i class="fas fa-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher un produit, boutique…"
+        [(ngModel)]="searchQuery"
+        (focus)="searchFocused = true"
+        (blur)="searchFocused = false"
+        (keydown.escape)="searchQuery = ''; searchFocused = false"
+        aria-label="Recherche"
+      />
+      <button
+        class="search-clear"
+        *ngIf="searchQuery.length > 0"
+        (click)="searchQuery = ''"
+        aria-label="Effacer">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- ── Desktop Nav Links ── -->
+    <nav class="nav-links">
+      <a routerLink="/dashboard"  routerLinkActive="active" class="nav-link">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+      <a routerLink="/produits"   routerLinkActive="active" class="nav-link">
+        <i class="fas fa-box"></i> Produits
+      </a>
+      <a routerLink="/boutique"   routerLinkActive="active" class="nav-link">
+        <i class="fas fa-store"></i> Boutique
+      </a>
+      <a routerLink="/parametres" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-cog"></i> Paramètres
+      </a>
+    </nav>
+
+    <!-- ── Actions ── -->
+    <div class="nav-actions">
+
+      <!-- Recherche mobile (icône) -->
+      <button
+        class="nav-action-btn mobile-search-btn"
+        (click)="toggleMobileSearch()"
+        [class.active]="mobileSearchOpen()"
+        aria-label="Rechercher">
+        <i class="fas fa-search"></i>
+      </button>
+
+      <!-- Panier -->
+      <div class="action-wrapper">
+        <button class="nav-action-btn" (click)="toggleCart($event)" [class.active]="cartOpen()" aria-label="Panier">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="badge badge-green" *ngIf="cartCount() > 0">
+            {{ cartCount() > 9 ? '9+' : cartCount() }}
+          </span>
+        </button>
+
+        <div class="dropdown-panel cart-panel" [class.open]="cartOpen()">
+          <div class="panel-header">
+            <span class="panel-title"><i class="fas fa-shopping-cart"></i> Mon Panier</span>
+            <span class="panel-count">{{ cartCount() }} article(s)</span>
+          </div>
+
+          <div class="panel-body">
+            <div *ngIf="cartItems.length === 0" class="panel-empty">
+              <span class="empty-icon">🛒</span>
+              <p>Votre panier est vide</p>
+            </div>
+            <ul *ngIf="cartItems.length > 0" class="cart-list">
+              <li *ngFor="let item of cartItems" class="cart-item">
+                <span class="cart-img">{{ item.img }}</span>
+                <div class="cart-info">
+                  <span class="cart-name">{{ item.name }}</span>
+                  <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} €</span>
+                </div>
+                <button class="cart-remove" (click)="removeFromCart(item.id)" aria-label="Supprimer">
+                  <i class="fas fa-times"></i>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="panel-footer" *ngIf="cartItems.length > 0">
+            <div class="cart-total">
+              <span>Total</span>
+              <strong>{{ cartTotal | number:'1.2-2' }} €</strong>
+            </div>
+            <button class="btn-checkout" routerLink="/panier" (click)="cartOpen.set(false)">
+              <i class="fas fa-lock"></i> Passer commande
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="action-wrapper">
+        <button class="nav-action-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()" aria-label="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="badge badge-red" *ngIf="notifCount() > 0">
+            {{ notifCount() > 9 ? '9+' : notifCount() }}
+          </span>
+        </button>
+
+        <div class="dropdown-panel notif-panel" [class.open]="notifOpen()">
+          <div class="panel-header">
+            <span class="panel-title"><i class="fas fa-bell"></i> Notifications</span>
+            <button class="mark-read-btn" (click)="markAllRead()" *ngIf="notifCount() > 0">
+              Tout marquer lu
+            </button>
+          </div>
+
+          <div class="panel-body">
+            <ul class="notif-list">
+              <li *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
+                <span class="notif-icon">{{ notif.icon }}</span>
+                <div class="notif-info">
+                  <p class="notif-text">{{ notif.text }}</p>
+                  <span class="notif-time">{{ notif.time }}</span>
+                </div>
+                <span class="unread-dot" *ngIf="!notif.read"></span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="panel-footer">
+            <a routerLink="/notifications" class="see-all" (click)="notifOpen.set(false)">
+              Voir toutes les notifications <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Avatar + Menu -->
+      <div class="action-wrapper">
+        <button class="nav-action-btn user-btn" (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
+          <span class="user-avatar-text">{{ getUserInitials() }}</span>
+        </button>
+
+        <div class="dropdown-panel user-panel" [class.open]="userMenuOpen()">
+          <div class="user-panel-top">
+            <div class="user-avatar-lg">{{ getUserInitials() }}</div>
+            <div class="user-panel-info">
+              <strong>{{ userConnected.username }}</strong>
+              <span>{{ userConnected.email }}</span>
+              <span class="role-badge">{{ userConnected.role }}</span>
+            </div>
+          </div>
+          <ul class="user-menu-list">
+            <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>
+            <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>
+          </ul>
+          <div class="user-panel-footer">
+            <button class="logout-btn" (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hamburger Mobile -->
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menu">
+        <i class="fas" [class.fa-bars]="!mobileMenuOpen()" [class.fa-times]="mobileMenuOpen()"></i>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ── Barre de recherche mobile (dépliable) ── -->
+  <div class="mobile-search-bar" [class.open]="mobileSearchOpen()">
+    <div class="mobile-search-inner">
+      <i class="fas fa-search mobile-search-icon"></i>
+      <input
+        type="text"
+        class="mobile-search-input"
+        placeholder="Rechercher un produit, boutique…"
+        [(ngModel)]="searchQuery"
+        aria-label="Recherche mobile"
+      />
+      <button class="search-clear" *ngIf="searchQuery.length > 0" (click)="searchQuery = ''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Mobile Nav ── -->
+  <nav class="mobile-nav" [class.open]="mobileMenuOpen()">
+    <a routerLink="/dashboard"  routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
+      <i class="fas fa-home"></i> Dashboard
+    </a>
+    <a routerLink="/produits"   routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
+      <i class="fas fa-box"></i> Produits
+    </a>
+    <a routerLink="/boutique"   routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
+      <i class="fas fa-store"></i> Boutique
+    </a>
+    <a routerLink="/parametres" routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
+      <i class="fas fa-cog"></i> Paramètres
+    </a>
+    <hr class="mobile-divider">
+    <button class="mobile-logout" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </button>
+  </nav>
+
+</header>

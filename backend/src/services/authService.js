@@ -198,8 +198,6 @@ class AuthService {
 
     // Vérifier le mot de passe avec bcrypt
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("taper:"+ password);
-    console.log("isMatch:"+ isMatch);
 
     if (!isMatch) {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.PASSWORD_INCORRECT);
@@ -243,13 +241,16 @@ class AuthService {
     return jwt.sign(
       {
         id: user._id,
+        username: user.username,
         email: user.email,
         role: user.role,
+
       },
       process.env.JWT_SECRET,
       { expiresIn: '6h' }
     );
   }
+
 
   /**
    * Décode et vérifie un token

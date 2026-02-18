@@ -4,6 +4,8 @@ import { RegisterComponent } from '../register-component/register-component';
 import {AuthService} from '../../services/auth-service';
 import { ChangeDetectorRef } from '@angular/core';
 import {ForgetPassword} from '../forget-password/forget-password';
+import {AuthUtilService} from '../../../../shared/services/auth-util.service';
+import {User} from '../../models/User';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +20,7 @@ export class LoginComponent implements OnInit {
   constructor(
     public modalService: NgbModal,
     private authService: AuthService,
+    private authUtil:AuthUtilService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -85,21 +88,47 @@ export class LoginComponent implements OnInit {
 
     // Appel API pour connexion
     this.authService.login(email, password, remember).subscribe({
-      next: (response: any) => {
-        console.log('Connexion réussie:', response);
-        alert('Connexion réussie ! Bienvenue sur Commersialiseo ');
-        this.modalService.dismissAll();
-      },
-      error: (err: { message: string; }) => {
-        const apiMessage = err.message || '';
-        if (apiMessage || apiMessage!='') {
-            this.errorMessage = apiMessage;
+      next: async (response: any) => {
+        console.log('Connexion réussie:', response.data);
+
+        // Stocker le token avant toute navigation
+        if (remember) {
+          localStorage.setItem('authToken', response.data.token);
+        } else {
+          sessionStorage.setItem('authToken', response.data.token);
         }
 
+        // Stocker les données utilisateur depuis la réponse
+        if (response.data.user) {
+          this.authUtil.storeUser(response.data.user, remember);
+        } else if (response.data.email || response.data.username || response.data.role) {
+          // Créer un utilisateur temporaire avec les données disponibles
+          const tempUser = new User();
+          tempUser.email = response.data.email || email;
+          tempUser.username = response.data.username || '';
+          if (response.data.role) {
+            tempUser.setRole(response.data.role);
+          }
+          this.authUtil.storeUser(tempUser, remember);
+        }
+
+        try {
+          // Navigation après login selon le rôle
+          await this.authUtil.navigateAfterLogin();
+          console.log("Navigation réussie !");
+        } catch (err) {
+          console.error("Erreur lors de la navigation :", err);
+        }
+
+        this.modalService.dismissAll();
+      },
+      error: (err: { message?: string }) => {
+        this.errorMessage = err.message || 'Erreur lors de la connexion';
         this.cdr.detectChanges(); // Force la détection des changements
       }
     });
   }
+
 
   /**
    * Ouvre le modal d'inscription

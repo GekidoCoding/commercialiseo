@@ -87,6 +87,16 @@ const authController = {
       return successResponse(res, result, result.message);
     }),
   ],
+
+  getPayloadToken: [
+    asyncHandler(async (req, res) => {
+      const { token } = req.body;
+      const result = await authService.verifyToken(token);
+      return successResponse(res, result, result.message);
+    }),
+  ],
+
+
 };
 
 module.exports = authController;
