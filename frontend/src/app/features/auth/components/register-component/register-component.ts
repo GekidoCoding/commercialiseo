@@ -15,7 +15,7 @@ import {User} from '../../models/User';
 })
 export class RegisterComponent implements OnInit {
   user: User = new User();
-  role :string = 'acheteur';
+  role :string = '';
   confirmPassword: string = '';
   termsAccepted: boolean = false;
   showPassword: boolean = false;
@@ -287,7 +287,8 @@ export class RegisterComponent implements OnInit {
     }
     this.user.role = this.role;
     this.isSubmitting = true;
-
+    console.log("role user:"+ this.user.role);
+   console.log("role input:"+ this.role);
     // Appel au service d'authentification
     this.authService.registerRequest(this.user.email,this.user.username, this.user.password , this.role).subscribe({
       next: (response) => {

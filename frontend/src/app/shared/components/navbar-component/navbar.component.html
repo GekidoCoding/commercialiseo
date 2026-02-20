@@ -1,7 +1,8 @@
+<!-- Navbar principale -->
 <header class="navbar" [class.scrolled]="isScrolled()">
   <div class="navbar-inner">
-    <!-- ── Logo ── -->
-    <a routerLink="/" class="nav-logo">
+    <!-- ── Logo (desktop uniquement) ── -->
+    <a routerLink="/" class="nav-logo desktop-only">
       <div class="logo-icon">
         <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
           <rect width="32" height="32" rx="8" fill="white" fill-opacity="0.2"/>
@@ -13,7 +14,8 @@
       <span class="logo-text">Commercialiseo</span>
     </a>
 
-    <!-- ── Barre de recherche ── -->
+
+    <!-- ── Barre de recherche (toutes tailles) ── -->
     <div class="search-wrapper" [class.focused]="searchFocused">
       <i class="fas fa-search search-icon"></i>
       <input
@@ -35,8 +37,8 @@
       </button>
     </div>
 
-    <!-- ── Desktop Nav Links ── -->
-    <nav class="nav-links">
+    <!-- ── Navigation Desktop ── -->
+    <nav class="nav-links desktop-only">
       <a routerLink="/dashboard"  routerLinkActive="active" class="nav-link">
         <i class="fas fa-home"></i> Dashboard
       </a>
@@ -51,18 +53,8 @@
       </a>
     </nav>
 
-    <!-- ── Actions ── -->
-    <div class="nav-actions">
-
-      <!-- Recherche mobile (icône) -->
-      <button
-        class="nav-action-btn mobile-search-btn"
-        (click)="toggleMobileSearch()"
-        [class.active]="mobileSearchOpen()"
-        aria-label="Rechercher">
-        <i class="fas fa-search"></i>
-      </button>
-
+    <!-- ── Actions Desktop (Panier, Notifs, Profil) ── -->
+    <div class="nav-actions desktop-only">
       <!-- Panier -->
       <div class="action-wrapper">
         <button class="nav-action-btn" (click)="toggleCart($event)" [class.active]="cartOpen()" aria-label="Panier">
@@ -147,7 +139,7 @@
         </div>
       </div>
 
-      <!-- User Avatar + Menu -->
+      <!-- Profil -->
       <div class="action-wrapper">
         <button class="nav-action-btn user-btn" (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
           <span class="user-avatar-text">{{ getUserInitials() }}</span>
@@ -173,33 +165,36 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Hamburger Mobile -->
-      <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menu">
-        <i class="fas" [class.fa-bars]="!mobileMenuOpen()" [class.fa-times]="mobileMenuOpen()"></i>
-      </button>
+    <!-- ── Profil Mobile uniquement ── -->
+    <div class="nav-profile mobile-only" (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
+      <span class="profile-name">{{ userConnected.username }}</span>
+      <span class="profile-avatar">{{ getUserInitials() }}</span>
 
+      <div class="dropdown-panel user-panel" [class.open]="userMenuOpen()">
+        <div class="user-panel-top">
+          <div class="user-avatar-lg">{{ getUserInitials() }}</div>
+          <div class="user-panel-info">
+            <strong>{{ userConnected.username }}</strong>
+            <span>{{ userConnected.email }}</span>
+            <span class="role-badge">{{ userConnected.role }}</span>
+          </div>
+        </div>
+        <ul class="user-menu-list">
+          <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>
+          <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>
+        </ul>
+        <div class="user-panel-footer">
+          <button class="logout-btn" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ── Barre de recherche mobile (dépliable) ── -->
-  <div class="mobile-search-bar" [class.open]="mobileSearchOpen()">
-    <div class="mobile-search-inner">
-      <i class="fas fa-search mobile-search-icon"></i>
-      <input
-        type="text"
-        class="mobile-search-input"
-        placeholder="Rechercher un produit, boutique…"
-        [(ngModel)]="searchQuery"
-        aria-label="Recherche mobile"
-      />
-      <button class="search-clear" *ngIf="searchQuery.length > 0" (click)="searchQuery = ''">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Mobile Nav ── -->
+  <!-- ── Menu Mobile dépliable ── -->
   <nav class="mobile-nav" [class.open]="mobileMenuOpen()">
     <a routerLink="/dashboard"  routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
       <i class="fas fa-home"></i> Dashboard
@@ -218,5 +213,111 @@
       <i class="fas fa-sign-out-alt"></i> Déconnexion
     </button>
   </nav>
-
 </header>
+
+<!-- Navigation Mobile Fixe en Bas avec Notifications et Panier -->
+<nav class="mobile-nav-bottom" *ngIf="isMobile()">
+  <!-- Items de navigation principaux -->
+  <div class="mobile-nav-items">
+    <a routerLink="/dashboard"  routerLinkActive="active" class="mobile-nav-item">
+      <i class="fas fa-home"></i>
+      <span>Accueil</span>
+    </a>
+    <a routerLink="/produits"   routerLinkActive="active" class="mobile-nav-item">
+      <i class="fas fa-box"></i>
+      <span>Produits</span>
+    </a>
+    <a routerLink="/boutique"   routerLinkActive="active" class="mobile-nav-item">
+      <i class="fas fa-store"></i>
+      <span>Boutique</span>
+    </a>
+    <a routerLink="/parametres" routerLinkActive="active" class="mobile-nav-item">
+      <i class="fas fa-cog"></i>
+      <span>Paramètres</span>
+    </a>
+  </div>
+
+  <!-- Barre secondaire avec Notifications et Panier -->
+  <div class="mobile-nav-secondary">
+    <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
+      <i class="fas fa-bell"></i>
+      <span>Notifications</span>
+      <span class="badge badge-red" *ngIf="notifCount() > 0">
+        {{ notifCount() > 9 ? '9+' : notifCount() }}
+      </span>
+    </button>
+
+    <button class="secondary-btn" (click)="toggleCart($event)" [class.active]="cartOpen()">
+      <i class="fas fa-shopping-cart"></i>
+      <span>Panier</span>
+      <span class="badge badge-green" *ngIf="cartCount() > 0">
+        {{ cartCount() > 9 ? '9+' : cartCount() }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Dropdown Panels pour mobile (positionnés au-dessus) -->
+  <div class="mobile-dropdown-container">
+    <!-- Panel Notifications -->
+    <div class="dropdown-panel notif-panel mobile-positioned" [class.open]="notifOpen()">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-bell"></i> Notifications</span>
+        <button class="mark-read-btn" (click)="markAllRead()" *ngIf="notifCount() > 0">
+          Tout marquer lu
+        </button>
+      </div>
+      <div class="panel-body">
+        <ul class="notif-list">
+          <li *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
+            <span class="notif-icon">{{ notif.icon }}</span>
+            <div class="notif-info">
+              <p class="notif-text">{{ notif.text }}</p>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+            <span class="unread-dot" *ngIf="!notif.read"></span>
+          </li>
+        </ul>
+      </div>
+      <div class="panel-footer">
+        <a routerLink="/notifications" class="see-all" (click)="notifOpen.set(false)">
+          Voir toutes les notifications <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Panel Panier -->
+    <div class="dropdown-panel cart-panel mobile-positioned" [class.open]="cartOpen()">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-shopping-cart"></i> Mon Panier</span>
+        <span class="panel-count">{{ cartCount() }} article(s)</span>
+      </div>
+      <div class="panel-body">
+        <div *ngIf="cartItems.length === 0" class="panel-empty">
+          <span class="empty-icon">🛒</span>
+          <p>Votre panier est vide</p>
+        </div>
+        <ul *ngIf="cartItems.length > 0" class="cart-list">
+          <li *ngFor="let item of cartItems" class="cart-item">
+            <span class="cart-img">{{ item.img }}</span>
+            <div class="cart-info">
+              <span class="cart-name">{{ item.name }}</span>
+              <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} €</span>
+            </div>
+            <button class="cart-remove" (click)="removeFromCart(item.id)" aria-label="Supprimer">
+              <i class="fas fa-times"></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div class="panel-footer" *ngIf="cartItems.length > 0">
+        <div class="cart-total">
+          <span>Total</span>
+          <strong>{{ cartTotal | number:'1.2-2' }} €</strong>
+        </div>
+        <button class="btn-checkout" routerLink="/panier" (click)="cartOpen.set(false)">
+          <i class="fas fa-lock"></i> Passer commande
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

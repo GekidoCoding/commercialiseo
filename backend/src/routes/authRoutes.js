@@ -6,8 +6,9 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 // const {authenticate, authorize} = require("../middleware/authMiddleware");
-
+ 
 // Applique à TOUTES les routes du router
+
 // router.use(authenticate);        // Vérifie le token
 // router.use(authorize('admin'));   // Vérifie le rôle (ici USER)
 

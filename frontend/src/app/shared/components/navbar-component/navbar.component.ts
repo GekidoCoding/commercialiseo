@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, HostListener, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import {FormsModule} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-navbar',
@@ -13,9 +13,10 @@ import {FormsModule} from '@angular/forms';
 export class NavbarComponent implements OnInit {
   private router = inject(Router);
 
-  searchQuery    = '';
-  searchFocused  = false;
-  mobileSearchOpen = signal(false);
+  searchQuery = '';
+  searchFocused = false;
+  isMobile = signal(false);
+  mobileMenuOpen = signal(false);
 
   // Badges
   cartCount = signal(3);
@@ -24,7 +25,6 @@ export class NavbarComponent implements OnInit {
   // Dropdowns
   cartOpen = signal(false);
   notifOpen = signal(false);
-  mobileMenuOpen = signal(false);
   userMenuOpen = signal(false);
 
   // Scroll state
@@ -33,15 +33,15 @@ export class NavbarComponent implements OnInit {
   // Mock data
   cartItems = [
     { id: 1, name: 'Produit Alpha', price: 29.99, qty: 1, img: '🛍️' },
-    { id: 2, name: 'Produit Beta',  price: 49.99, qty: 2, img: '📦' },
+    { id: 2, name: 'Produit Beta', price: 49.99, qty: 2, img: '📦' },
   ];
 
   notifications = [
-    { id: 1, text: 'Nouvelle commande reçue',        time: 'Il y a 2 min',  read: false, icon: '🛒' },
-    { id: 2, text: 'Votre produit a été expédié',    time: 'Il y a 1h',    read: false, icon: '📬' },
-    { id: 3, text: 'Promotion disponible',            time: 'Il y a 3h',    read: false, icon: '🎉' },
-    { id: 4, text: 'Paiement confirmé',               time: 'Hier',         read: true,  icon: '✅' },
-    { id: 5, text: 'Nouveau message',                 time: 'Hier',         read: true,  icon: '💬' },
+    { id: 1, text: 'Nouvelle commande reçue', time: 'Il y a 2 min', read: false, icon: '🛒' },
+    { id: 2, text: 'Votre produit a été expédié', time: 'Il y a 1h', read: false, icon: '📬' },
+    { id: 3, text: 'Promotion disponible', time: 'Il y a 3h', read: false, icon: '🎉' },
+    { id: 4, text: 'Paiement confirmé', time: 'Hier', read: true, icon: '✅' },
+    { id: 5, text: 'Nouveau message', time: 'Hier', read: true, icon: '💬' },
   ];
 
   userConnected = {
@@ -55,24 +55,45 @@ export class NavbarComponent implements OnInit {
     this.isScrolled.set(window.scrollY > 10);
   }
 
+  @HostListener('window:resize')
+  onResize() {
+    this.checkMobile();
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.nav-action-btn') && !target.closest('.dropdown-panel')) {
-      this.cartOpen.set(false);
-      this.notifOpen.set(false);
+
+    // Fermer user menu si clic extérieur
+    if (!target.closest('.nav-action-btn') && !target.closest('.nav-profile') && !target.closest('.user-panel')) {
       this.userMenuOpen.set(false);
     }
-    if (!target.closest('.mobile-menu-btn') && !target.closest('.mobile-nav')) {
+
+    // Fermer cart/notif si clic extérieur (mobile)
+    if (!target.closest('.secondary-btn') && !target.closest('.mobile-dropdown-container')) {
+      this.cartOpen.set(false);
+      this.notifOpen.set(false);
+    }
+
+    // Fermer mobile menu si clic extérieur
+    if (!target.closest('.floating-menu-btn') && !target.closest('.mobile-nav')) {
       this.mobileMenuOpen.set(false);
     }
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.checkMobile();
+  }
 
-  toggleMobileSearch() {
-    this.mobileSearchOpen.set(!this.mobileSearchOpen());
-    this.mobileMenuOpen.set(false); // ferme le menu si ouvert
+  private checkMobile() {
+    this.isMobile.set(window.innerWidth <= 900);
+    if (!this.isMobile()) {
+      this.mobileMenuOpen.set(false);
+    }
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen.set(!this.mobileMenuOpen());
   }
 
   toggleCart(event: Event) {
@@ -97,10 +118,6 @@ export class NavbarComponent implements OnInit {
     this.userMenuOpen.set(next);
     this.cartOpen.set(false);
     this.notifOpen.set(false);
-  }
-
-  toggleMobileMenu() {
-    this.mobileMenuOpen.set(!this.mobileMenuOpen());
   }
 
   markAllRead() {
