@@ -1,28 +1,77 @@
-/* module-layout.component.css */
-.layout {
+/* ============================================
+   LAYOUT AVEC SIDEBAR ET NAVBAR
+============================================ */
+
+.layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar fixe à gauche */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  z-index: 999;
+  transition: width 0.35s ease;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+/* Zone principale à droite du sidebar */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  transition: margin-left 0.35s ease;
 }
 
-.main-area {
-  display: flex;
-  flex: 1;
+.sidebar.collapsed ~ .main-content,
+.main-content.sidebar-collapsed {
+  margin-left: var(--sidebar-collapsed);
 }
 
-app-sidebar {
-  width: 250px;
-}
-
-.content {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-app-navbar {
-  height: 60px;
+/* Navbar dans le flux du main-content */
+.navbar {
+  position: sticky; /* Ou fixed si besoin */
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
+  z-index: 990;
 }
 
+/* Contenu de la page */
+.page-content {
+  flex: 1;
+  padding: 1.5rem;
+  background: var(--gray-50);
+  min-height: calc(100vh - var(--navbar-height));
+}
 
+/* ============================================
+   MOBILE - Sidebar devient overlay
+============================================ */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 280px !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  .navbar {
+    left: 0;
+  }
+}
