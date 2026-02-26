@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { RegisterComponent } from '../register-component/register-component';
-import {AuthService} from '../../services/auth-service';
-import { ChangeDetectorRef } from '@angular/core';
-import {ForgetPassword} from '../forget-password/forget-password';
-import {AuthUtilService} from '../../../../shared/services/auth-util.service';
-import {User} from '../../models/User';
+import { AuthService } from '../../services/auth-service';
+import { ForgetPassword } from '../forget-password/forget-password';
+import { AuthUtilService } from '../../../../shared/services/auth-util.service';
+import { User } from '../../models/User';
 
 @Component({
   selector: 'app-login',
@@ -15,151 +14,138 @@ import {User} from '../../models/User';
 })
 export class LoginComponent implements OnInit {
 
+  // Champs du formulaire
+  email: string = '';
+  password: string = '';
+  rememberMe: boolean = false;
+
+  // UI states
+  showPassword: boolean = false;
+  isSubmitting: boolean = false;
+  showError: boolean = false;
   errorMessage: string = '';
 
   constructor(
     public modalService: NgbModal,
     private authService: AuthService,
-    private authUtil:AuthUtilService,
+    private authUtil: AuthUtilService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.initializePasswordToggle();
+  ngOnInit(): void {}
+
+  /** Bascule l'affichage du mot de passe */
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
-  /**
-   * Initialise le bouton pour afficher/masquer le mot de passe
-   */
-  private initializePasswordToggle(): void {
-    setTimeout(() => {
-      const toggleButton = document.querySelector('.password-toggle') as HTMLButtonElement;
-      const passwordInput = document.getElementById('password') as HTMLInputElement;
-
-      if (!toggleButton || !passwordInput) return;
-
-      toggleButton.addEventListener('click', () => {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-
-        // Changer l'icône
-        const icon = toggleButton.querySelector('svg');
-        if (icon) {
-          if (type === 'text') {
-            // Icône œil barré
-            icon.innerHTML = `
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-              <line x1="1" y1="1" x2="23" y2="23"/>
-            `;
-          } else {
-            // Icône œil normal
-            icon.innerHTML = `
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            `;
-          }
-        }
-      });
-    }, 0);
+  /** Valide le format de l'email */
+  isEmailValid(): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(this.email);
   }
 
-  /**
-   * Gestion de la soumission du formulaire
-   */
+  /** Vérifie si le formulaire est valide pour activer le bouton */
+  isFormValid(): boolean {
+    return this.isEmailValid() && this.password.length > 0;
+  }
+
+  /** Soumission du formulaire */
   onSubmit(event: Event): void {
     event.preventDefault();
-    this.errorMessage = ''; // Réinitialiser le message d'erreur
 
-    const form = event.target as HTMLFormElement;
-    const email = (form.querySelector('#email') as HTMLInputElement).value;
-    const password = (form.querySelector('#password') as HTMLInputElement).value;
-    const remember = (form.querySelector('#remember') as HTMLInputElement).checked;
+    // Réinitialiser l'erreur
+    this.showError = false;
+    this.errorMessage = '';
 
     // Validation
-    if (!email || !password) {
-      this.errorMessage = 'Veuillez remplir tous les champs';
-      return;
-    }
-
-    if (!this.isValidEmail(email)) {
+    if (!this.isEmailValid()) {
+      this.showError = true;
       this.errorMessage = 'Veuillez entrer une adresse email valide';
       return;
     }
 
-    // Appel API pour connexion
-    this.authService.login(email, password, remember).subscribe({
+    if (!this.password) {
+      this.showError = true;
+      this.errorMessage = 'Veuillez entrer votre mot de passe';
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    this.authService.login(this.email, this.password, this.rememberMe).subscribe({
       next: async (response: any) => {
+        this.isSubmitting = false;
         console.log('Connexion réussie:', response.data);
 
-        // Stocker le token avant toute navigation
-        if (remember) {
+        // Stocker le token
+        if (this.rememberMe) {
           localStorage.setItem('authToken', response.data.token);
         } else {
           sessionStorage.setItem('authToken', response.data.token);
         }
 
-        // Stocker les données utilisateur depuis la réponse
+        // Stocker les données utilisateur
         if (response.data.user) {
-          this.authUtil.storeUser(response.data.user, remember);
+          this.authUtil.storeUser(response.data.user, this.rememberMe);
         } else if (response.data.email || response.data.username || response.data.role) {
-          // Créer un utilisateur temporaire avec les données disponibles
           const tempUser = new User();
-          tempUser.email = response.data.email || email;
+          tempUser.email = response.data.email || this.email;
           tempUser.username = response.data.username || '';
           if (response.data.role) {
             tempUser.setRole(response.data.role);
           }
-          this.authUtil.storeUser(tempUser, remember);
+          this.authUtil.storeUser(tempUser, this.rememberMe);
         }
 
         try {
-          // Navigation après login selon le rôle
           await this.authUtil.navigateAfterLogin();
-          console.log("Navigation réussie !");
         } catch (err) {
-          console.error("Erreur lors de la navigation :", err);
+          console.error('Erreur lors de la navigation :', err);
         }
 
         this.modalService.dismissAll();
       },
       error: (err: { message?: string }) => {
-        this.errorMessage = err.message || 'Erreur lors de la connexion';
-        this.cdr.detectChanges(); // Force la détection des changements
+        this.isSubmitting = false;
+        this.showError = true;
+
+        const errorMsg = err.message || '';
+
+        if (errorMsg.includes('Email') || errorMsg.includes('introuvable')) {
+          this.errorMessage = 'Aucun compte trouvé avec cet email';
+        } else if (errorMsg.includes('password') || errorMsg.includes('mot de passe')) {
+          this.errorMessage = 'Mot de passe incorrect';
+        } else if (errorMsg.includes('Erreur serveur')) {
+          this.errorMessage = 'Erreur serveur, veuillez réessayer plus tard';
+        } else {
+          this.errorMessage = 'Email ou mot de passe incorrect';
+        }
+
+        this.cdr.detectChanges();
       }
     });
   }
 
-
-  /**
-   * Ouvre le modal d'inscription
-   */
+  /** Ouvre le modal d'inscription */
   openRegister(): void {
     this.modalService.dismissAll();
     this.modalService.open(RegisterComponent, {
       centered: true,
       backdrop: 'static',
       keyboard: false,
-      size: 'xl'  // ou 'lg'
+      size: 'xl'
     });
   }
 
-  /**
-   * Mot de passe oublié
-   */
+  /** Mot de passe oublié */
   onForgotPassword(): void {
     this.modalService.dismissAll();
     this.modalService.open(ForgetPassword, {
       centered: true,
       backdrop: 'static',
       keyboard: false,
-      size: 'xl'  // ou 'lg'
+      size: 'xl'
     });
-  }
-  /**
-   * Valide le format de l'email
-   */
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   }
 }

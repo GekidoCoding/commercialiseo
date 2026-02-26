@@ -1,21 +1,8 @@
 <!-- Navbar principale -->
 <header class="navbar" [class.scrolled]="isScrolled()">
   <div class="navbar-inner">
-    <!-- ── Logo (desktop uniquement) ── -->
-    <a routerLink="/" class="nav-logo desktop-only">
-      <div class="logo-icon">
-        <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="8" fill="white" fill-opacity="0.2"/>
-          <path d="M16 7L23 13.5H9L16 7Z" fill="white"/>
-          <rect x="9" y="13.5" width="14" height="11.5" rx="1.5" fill="white"/>
-          <rect x="13" y="17" width="6" height="5" rx="0.5" fill="#059669"/>
-        </svg>
-      </div>
-      <span class="logo-text">Commercialiseo</span>
-    </a>
-
-
     <!-- ── Barre de recherche (toutes tailles) ── -->
+
     <div class="search-wrapper" [class.focused]="searchFocused">
       <i class="fas fa-search search-icon"></i>
       <input
@@ -37,21 +24,7 @@
       </button>
     </div>
 
-    <!-- ── Navigation Desktop ── -->
-    <nav class="nav-links desktop-only">
-      <a routerLink="/dashboard"  routerLinkActive="active" class="nav-link">
-        <i class="fas fa-home"></i> Dashboard
-      </a>
-      <a routerLink="/produits"   routerLinkActive="active" class="nav-link">
-        <i class="fas fa-box"></i> Produits
-      </a>
-      <a routerLink="/boutique"   routerLinkActive="active" class="nav-link">
-        <i class="fas fa-store"></i> Boutique
-      </a>
-      <a routerLink="/parametres" routerLinkActive="active" class="nav-link">
-        <i class="fas fa-cog"></i> Paramètres
-      </a>
-    </nav>
+
 
     <!-- ── Actions Desktop (Panier, Notifs, Profil) ── -->
     <div class="nav-actions desktop-only">
@@ -138,33 +111,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Profil -->
-      <div class="action-wrapper">
-        <button class="nav-action-btn user-btn" (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
-          <span class="user-avatar-text">{{ getUserInitials() }}</span>
-        </button>
-
-        <div class="dropdown-panel user-panel" [class.open]="userMenuOpen()">
-          <div class="user-panel-top">
-            <div class="user-avatar-lg">{{ getUserInitials() }}</div>
-            <div class="user-panel-info">
-              <strong>{{ userConnected.username }}</strong>
-              <span>{{ userConnected.email }}</span>
-              <span class="role-badge">{{ userConnected.role }}</span>
-            </div>
-          </div>
-          <ul class="user-menu-list">
-            <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>
-            <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>
-          </ul>
-          <div class="user-panel-footer">
-            <button class="logout-btn" (click)="logout()">
-              <i class="fas fa-sign-out-alt"></i> Déconnexion
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ── Profil Mobile uniquement ── -->
@@ -194,54 +140,27 @@
     </div>
   </div>
 
-  <!-- ── Menu Mobile dépliable ── -->
-  <nav class="mobile-nav" [class.open]="mobileMenuOpen()">
-    <a routerLink="/dashboard"  routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
-      <i class="fas fa-home"></i> Dashboard
-    </a>
-    <a routerLink="/produits"   routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
-      <i class="fas fa-box"></i> Produits
-    </a>
-    <a routerLink="/boutique"   routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
-      <i class="fas fa-store"></i> Boutique
-    </a>
-    <a routerLink="/parametres" routerLinkActive="active" class="mobile-link" (click)="mobileMenuOpen.set(false)">
-      <i class="fas fa-cog"></i> Paramètres
-    </a>
-    <hr class="mobile-divider">
-    <button class="mobile-logout" (click)="logout()">
-      <i class="fas fa-sign-out-alt"></i> Déconnexion
-    </button>
-  </nav>
+
 </header>
 
 <!-- Navigation Mobile Fixe en Bas avec Notifications et Panier -->
 <nav class="mobile-nav-bottom" *ngIf="isMobile()">
-  <!-- Items de navigation principaux -->
-  <div class="mobile-nav-items">
-    <a routerLink="/dashboard"  routerLinkActive="active" class="mobile-nav-item">
-      <i class="fas fa-home"></i>
-      <span>Accueil</span>
-    </a>
-    <a routerLink="/produits"   routerLinkActive="active" class="mobile-nav-item">
-      <i class="fas fa-box"></i>
-      <span>Produits</span>
-    </a>
-    <a routerLink="/boutique"   routerLinkActive="active" class="mobile-nav-item">
-      <i class="fas fa-store"></i>
-      <span>Boutique</span>
-    </a>
-    <a routerLink="/parametres" routerLinkActive="active" class="mobile-nav-item">
-      <i class="fas fa-cog"></i>
-      <span>Paramètres</span>
-    </a>
-  </div>
-
   <!-- Barre secondaire avec Notifications et Panier -->
   <div class="mobile-nav-secondary">
+
+    <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
+      <i class="fas fa-house"></i>
+    </button>
+
+    <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
+      <i class="fas fa-message"></i>
+      <span class="badge badge-red" *ngIf="notifCount() > 0">
+        {{ notifCount() > 9 ? '9+' : notifCount() }}
+      </span>
+    </button>
+
     <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
       <i class="fas fa-bell"></i>
-      <span>Notifications</span>
       <span class="badge badge-red" *ngIf="notifCount() > 0">
         {{ notifCount() > 9 ? '9+' : notifCount() }}
       </span>
@@ -249,7 +168,6 @@
 
     <button class="secondary-btn" (click)="toggleCart($event)" [class.active]="cartOpen()">
       <i class="fas fa-shopping-cart"></i>
-      <span>Panier</span>
       <span class="badge badge-green" *ngIf="cartCount() > 0">
         {{ cartCount() > 9 ? '9+' : cartCount() }}
       </span>

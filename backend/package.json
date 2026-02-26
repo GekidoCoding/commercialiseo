@@ -16,7 +16,13 @@
     "type": "git",
     "url": "git+https://github.com/GekidoCoding/commercialiseo_backend.git"
   },
-  "keywords": ["ecommerce", "api", "nodejs", "express", "mongodb"],
+  "keywords": [
+    "ecommerce",
+    "api",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
   "author": "Commercialiseo Team",
   "license": "ISC",
   "bugs": {
@@ -36,6 +42,7 @@
     "helmet": "^7.1.0",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.1.0",
     "mongoose": "^9.2.1",
     "nodemailer": "^8.0.1",
     "winston": "^3.11.0"

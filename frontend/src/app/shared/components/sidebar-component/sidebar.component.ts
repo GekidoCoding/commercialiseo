@@ -24,7 +24,7 @@ export class SidebarComponent implements OnInit {
   menu: SidebarElement[]  = [];
   openDropdowns: Set<string> = new Set();
 
-  isExpanded = true;
+  isExpanded = false;
   isMobile   = false;
   mobileOpen = false;
 
