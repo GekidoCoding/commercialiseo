@@ -5,8 +5,8 @@
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const VerificationCode = require('../models/VerificationCode');
+const User = require('../models/write/users');
+const VerificationCode = require('../models/write/verificationcode');
 const emailService = require('./emailService');
 const { generateCode } = require('../utils/generateCode');
 const { AUTH_MESSAGES } = require('../constants/messages');

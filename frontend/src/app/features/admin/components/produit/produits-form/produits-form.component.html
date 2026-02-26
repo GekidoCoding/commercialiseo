@@ -1,0 +1,248 @@
+<!-- Overlay du modal -->
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+
+  <div class="modal-container">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-box-open"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="modal-title">Nouveau Produit</h2>
+          <p class="modal-subtitle">Ajouter un nouveau produit au catalogue</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form #produitForm="ngForm" class="form-produit">
+
+        <!-- Section Informations -->
+        <div class="form-section">
+
+          <!-- Nom -->
+          <div class="form-group">
+            <label for="nom" class="form-label">
+              <i class="fas fa-tag"></i>
+              Nom du produit <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="nom"
+                name="nom"
+                [(ngModel)]="produit.nom"
+                class="form-input"
+                placeholder="Ex: iPhone 15 Pro Max..."
+                required>
+              <div class="input-line"></div>
+              <i class="fas fa-box input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Catégorie -->
+          <div class="form-group">
+            <label for="categorie" class="form-label">
+              <i class="fas fa-folder"></i>
+              Catégorie <span class="required">*</span>
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <select
+                id="categorie"
+                name="categorie"
+                [(ngModel)]="produit.categorieId"
+                class="form-input form-select"
+                required>
+                <option [ngValue]="null">Sélectionner une catégorie</option>
+                <option *ngFor="let cat of categories" [value]="cat.id">
+                  {{ cat.name }}
+                </option>
+              </select>
+
+              <div class="input-line"></div>
+              <i class="fas fa-chevron-down input-icon select-arrow"></i>
+            </div>
+            <button
+              type="button"
+              class="btn-add-category"
+              (click)="openCategorieModal()"
+              title="Ajouter une catégorie">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- Code -->
+          <div class="form-group">
+            <label for="code" class="form-label">
+              <i class="fas fa-barcode"></i>
+              Code produit <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="code"
+                name="code"
+                [(ngModel)]="produit.code"
+                class="form-input"
+                placeholder="Ex: PRD-001..."
+                required>
+              <div class="input-line"></div>
+              <i class="fas fa-hashtag input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Date de sortie -->
+          <div class="form-group">
+            <label for="dateSortie" class="form-label">
+              <i class="fas fa-calendar"></i>
+              Date de sortie <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="date"
+                id="dateSortie"
+                name="dateSortie"
+                [(ngModel)]="produit.dateSortie"
+                class="form-input"
+                required>
+              <div class="input-line"></div>
+              <i class="fas fa-calendar-alt input-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Spécifications -->
+        <div class="form-section specifications-section">
+          <div class="section-header">
+            <label class="section-title">
+              <i class="fas fa-list-ul"></i>
+              Spécifications techniques
+            </label>
+            <span class="section-hint">Définissez les caractéristiques du produit</span>
+          </div>
+
+          <!-- Tableau des spécifications -->
+          <div class="table-container">
+            <table class="specifications-table">
+              <thead>
+              <tr>
+                <th class="col-name">Nom</th>
+                <th class="col-value">Valeur</th>
+                <th class="col-actions"></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                *ngFor="let spec of specifications"
+                class="spec-row"
+                [class.editing]="spec.isEditing">
+
+                <!-- Nom -->
+                <td class="col-name">
+                  <ng-container *ngIf="spec.isEditing; else nameReadonly">
+                    <input
+                      type="text"
+                      [(ngModel)]="spec.name"
+                      [name]="'spec-name-' + spec.id"
+                      class="table-input"
+                      placeholder="Ex: Batterie..."
+                      (blur)="confirmSpecification(spec)"
+                      (keyup.enter)="confirmSpecification(spec)">
+                  </ng-container>
+                  <ng-template #nameReadonly>
+                      <span class="spec-name" (click)="spec.isEditing = true">
+                        {{ spec.name }}
+                      </span>
+                  </ng-template>
+                </td>
+
+                <!-- Valeur -->
+                <td class="col-value">
+                  <ng-container *ngIf="spec.isEditing; else valueReadonly">
+                    <input
+                      type="text"
+                      [(ngModel)]="spec.value"
+                      [name]="'spec-value-' + spec.id"
+                      class="table-input"
+                      placeholder="Ex: 5000mAh..."
+                      (blur)="confirmSpecification(spec)"
+                      (keyup.enter)="confirmSpecification(spec)">
+                  </ng-container>
+                  <ng-template #valueReadonly>
+                      <span class="spec-value" (click)="spec.isEditing = true">
+                        {{ spec.value }}
+                      </span>
+                  </ng-template>
+                </td>
+
+                <!-- Actions -->
+                <td class="col-actions">
+                  <button
+                    type="button"
+                    class="btn-delete-row"
+                    (click)="removeSpecification(spec.id)"
+                    title="Supprimer cette spécification">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- État vide -->
+              <tr *ngIf="specifications.length === 0" class="empty-row">
+                <td colspan="3">
+                  <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>Aucune spécification</p>
+                    <span>Cliquez sur + pour ajouter</span>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+
+            <!-- Bouton Ajouter -->
+            <button
+              type="button"
+              class="btn-add-spec"
+              (click)="addSpecification()">
+              <span>Ajouter une spécification</span>
+              <small>Cliquez en dehors pour confirmer</small>
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-info">
+        <span class="required-hint"><span class="dot"></span> Champs obligatoires</span>
+      </div>
+      <div class="footer-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onClose()">
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onSave()"
+          [disabled]="!isFormValid() || isSubmitting">
+          <i class="fas" [class.fa-check]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
+          {{ isSubmitting ? 'Enregistrement...' : 'Créer le produit' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -2,7 +2,7 @@ export class User {
   email: string = '';
   username: string = '';
   password: string = '';
-  readonly roles: string[] = [ 'acheteur', 'boutique'];
+  readonly roles: string[] = [ 'acheteur', 'boutique' , 'admin'];
   role: string = this.roles[0];
 
   setRole(role: string) {

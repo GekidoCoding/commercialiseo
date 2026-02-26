@@ -4,7 +4,7 @@
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { ROLES } = require('../constants/roles');
+const { ROLES } = require('../../constants/roles');
 
 const userSchema = new mongoose.Schema(
   {
@@ -113,7 +113,7 @@ userSchema.statics.emailExists = async function (email) {
 
 
 /**
- * dhajdbaj Méthode pour obtenir le profil public
+ *  Méthode pour obtenir le profil public
  */
 userSchema.methods.toPublicProfile = function () {
   return {

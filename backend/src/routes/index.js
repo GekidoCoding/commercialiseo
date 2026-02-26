@@ -7,7 +7,8 @@ const express = require('express');
 const router = express.Router();
 
 const authRoutes = require('./authRoutes');
-const produitRoutes = require('./produitRoutes');
+
+
 
 // Health check
 router.get('/health', (req, res) => {
@@ -21,6 +22,5 @@ router.get('/health', (req, res) => {
 
 // Routes API
 router.use('/auth', authRoutes);
-router.use('/produits', produitRoutes);
 
 module.exports = router;

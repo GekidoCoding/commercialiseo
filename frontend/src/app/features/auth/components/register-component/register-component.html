@@ -76,11 +76,13 @@
             </svg>
             Type de compte
           </label>
-            <select  class="form-control" [(ngModel)]="role">
-              <option
-                *ngFor="let role of user.roles" [value]="role"
-              > {{role}} </option>
-            </select>
+          <select class="form-control" [(ngModel)]="role" name="role">
+            <option value="">-- Sélectionner un rôle --</option>
+
+            <option *ngFor="let r of user.roles" [value]="r">
+              {{ getRoleLabel(r) }}
+            </option>
+          </select>
         </div>
 
         <div class="form-group mt-3">
