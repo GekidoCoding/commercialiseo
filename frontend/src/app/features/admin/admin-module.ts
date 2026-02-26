@@ -3,17 +3,24 @@ import { CommonModule } from '@angular/common';
 
 import { AdminRoutingModule } from './admin-routing-module';
 import {TestAdmin} from './pages/test-admin/test-admin';
-import {ProduitsComponent} from './pages/produits/produits.component';
+import {FormsModule} from '@angular/forms';
+import {RouterModule} from '@angular/router';
+import {ProduitsFormComponent} from './components/produit/produits-form/produits-form.component';
+import {CategorieFormComponent} from './components/categorie/categorie-form/categorie-form.component';
+import {ProduitsListComponent} from './pages/produits-list/produits-list.component';
 
 
 @NgModule({
   declarations: [
     TestAdmin,
-    ProduitsComponent
+    ProduitsFormComponent,
+    CategorieFormComponent,
+    ProduitsListComponent
   ],
   imports: [
     CommonModule,
-    AdminRoutingModule
+    AdminRoutingModule ,
+    CommonModule, FormsModule, RouterModule
   ]
 })
 export class AdminModule { }

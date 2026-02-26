@@ -1,0 +1,100 @@
+<!-- Overlay du modal -->
+<div class="modal-overlay">
+
+  <div class="modal-container">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-folder-plus"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="modal-title">Nouvelle catégorie</h2>
+          <p class="modal-subtitle">Créez une nouvelle catégorie de produits</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form #categorieForm="ngForm" class="form-categorie">
+
+        <!-- Nom de la catégorie -->
+        <div class="form-section">
+          <div class="form-group">
+            <label for="nomCategorie" class="form-label">
+              <i class="fas fa-tag"></i>
+              Nom de la catégorie <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="nomCategorie"
+                name="nomCategorie"
+                [(ngModel)]="categorie.nom"
+                class="form-input"
+                placeholder="Ex: Électronique, Vêtements..."
+                required
+                #nomInput="ngModel">
+              <div class="input-line"></div>
+              <i class="fas fa-pen input-icon"></i>
+            </div>
+            <div class="error-message" *ngIf="nomInput.invalid && nomInput.touched">
+              <i class="fas fa-exclamation-circle"></i>
+              Le nom est obligatoire
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="description" class="form-label">
+              <i class="fas fa-align-left"></i>
+              Description
+            </label>
+            <div class="input-wrapper textarea-wrapper">
+              <textarea
+                id="description"
+                name="description"
+                [(ngModel)]="categorie.description"
+                class="form-textarea"
+                placeholder="Description de la catégorie (optionnel)"
+                rows="3"></textarea>
+              <div class="input-line"></div>
+            </div>
+          </div>
+        </div>
+
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-info">
+        <span class="required-hint"><span class="dot"> </span> Champs obligatoires</span>
+      </div>
+      <div class="footer-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onClose()">
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onSave()"
+          [disabled]="!isFormValid()">
+          <i class="fas fa-check"></i>
+          Créer la catégorie
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -20,11 +20,14 @@ export class SidebarComponent implements OnInit {
   private router          = inject(Router);
   private elementRef      = inject(ElementRef);
 
-  userConnected: User     = new User();
-  menu: SidebarElement[]  = [];
+  userConnected: User        = new User();
+  menu: SidebarElement[]     = [];
   openDropdowns: Set<string> = new Set();
 
+  // ── État Desktop (hover) ──────────────────────
   isExpanded = false;
+
+  // ── État Mobile (drawer) ──────────────────────
   isMobile   = false;
   mobileOpen = false;
 
@@ -39,45 +42,70 @@ export class SidebarComponent implements OnInit {
     this.checkMobile();
   }
 
-  private checkMobile() {
+  // ─────────────────────────────────────────────
+  // Init
+  // ─────────────────────────────────────────────
+
+  private checkMobile(): void {
     const wasMobile = this.isMobile;
-    this.isMobile = window.innerWidth <= 768;
-    if (!this.isMobile && wasMobile) this.mobileOpen = false;
+    this.isMobile   = window.innerWidth <= 768;
+    if (!this.isMobile && wasMobile) {
+      this.mobileOpen = false;
+    }
   }
 
-  private loadMenu() {
+  private loadMenu(): void {
     const user = this.authUtilService.getUserFromStorage();
     if (user) {
       this.userConnected = user;
-      this.menu = this.navService.getMenuByRoleAndModule(user.role);
+      this.menu          = this.navService.getMenuByRoleAndModule(user.role);
     } else {
       this.userConnected = new User();
-      this.menu = [];
+      this.menu          = [];
     }
   }
 
-  toggleSidebar() {
+  // ─────────────────────────────────────────────
+  // Toggle MOBILE drawer — bouton hamburger uniquement
+  // ─────────────────────────────────────────────
+  toggleMobileDrawer(): void {
     if (this.isMobile) {
       this.mobileOpen = !this.mobileOpen;
-    } else {
-      this.isExpanded = !this.isExpanded;
-      // Fermer tous les flyouts quand on toggle la sidebar
-      if (this.isExpanded) {
-        this.openDropdowns.clear();
-      }
     }
   }
 
+  closeMobileDrawer(): void {
+    this.mobileOpen = false;
+  }
+
+  // ─────────────────────────────────────────────
+  // Hover DESKTOP — expand / collapse
+  // ─────────────────────────────────────────────
+  onSidebarMouseEnter(): void {
+    if (!this.isMobile) {
+      this.isExpanded = true;
+    }
+  }
+
+  onSidebarMouseLeave(): void {
+    if (!this.isMobile) {
+      this.isExpanded = false;
+      this.openDropdowns.clear();
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // Toggle DROPDOWN enfants — indépendant du sidebar
+  // ─────────────────────────────────────────────
   toggleDropdown(itemName: string): void {
     if (this.openDropdowns.has(itemName)) {
       this.openDropdowns.delete(itemName);
     } else {
-      // En mode collapsed, on ferme les autres flyouts
+      // Mode collapsed desktop : un seul flyout à la fois
       if (!this.isExpanded && !this.isMobile) {
         this.openDropdowns.clear();
       }
       this.openDropdowns.add(itemName);
-      // Calculer la position pour le flyout
       this.calculateFlyoutPosition(itemName);
     }
   }
@@ -86,28 +114,26 @@ export class SidebarComponent implements OnInit {
     return this.openDropdowns.has(itemName);
   }
 
+  // ─────────────────────────────────────────────
+  // Flyout desktop collapsed
+  // ─────────────────────────────────────────────
   get activeFlyout(): string | null {
     if (this.isExpanded || this.isMobile) return null;
-    for (const name of this.openDropdowns) {
-      return name;
-    }
+    for (const name of this.openDropdowns) return name;
     return null;
   }
 
   getFlyoutPosition(itemName: string): number {
-    return this.itemPositions.get(itemName) || 70; // Default: header height
+    return this.itemPositions.get(itemName) ?? 70;
   }
 
   private calculateFlyoutPosition(itemName: string): void {
-    // Trouver l'index de l'item dans le menu
     const index = this.menu.findIndex(item => item.name === itemName);
     if (index !== -1) {
-      // Header (70px) + padding + items précédents
       const headerHeight = 70;
-      const itemHeight = 48; // Hauteur approximative d'un item
-      const padding = 12;
-      const position = headerHeight + padding + (index * itemHeight);
-      this.itemPositions.set(itemName, position);
+      const itemHeight   = 48;
+      const padding      = 12;
+      this.itemPositions.set(itemName, headerHeight + padding + index * itemHeight);
     }
   }
 
@@ -117,11 +143,14 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  // ─────────────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────────────
   get sidebarVisible(): boolean {
     return this.isMobile ? this.mobileOpen : true;
   }
 
-  logout() {
+  logout(): void {
     this.authUtilService.logout();
     this.router.navigate(['/login']);
   }
@@ -131,14 +160,12 @@ export class SidebarComponent implements OnInit {
     return name.slice(0, 2).toUpperCase();
   }
 
-  // Fermer le flyout si on clique ailleurs
+  // Fermer le flyout si clic en dehors (desktop collapsed)
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.isExpanded && !this.isMobile && this.openDropdowns.size > 0) {
       const clickedInside = this.elementRef.nativeElement.contains(event.target);
-      if (!clickedInside) {
-        this.openDropdowns.clear();
-      }
+      if (!clickedInside) this.openDropdowns.clear();
     }
   }
 }

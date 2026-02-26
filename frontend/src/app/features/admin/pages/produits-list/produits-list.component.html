@@ -1,0 +1,228 @@
+<div class="page-container">
+
+  <!-- Header avec titre et breadcrumbs -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Liste des Produits</h1>
+      <nav class="breadcrumbs">
+        <a >Admin</a>
+        <span class="separator">></span>
+        <span class="current">Produits</span>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <i class="fas fa-plus"></i>
+        Ajouter un Produit
+      </button>
+    </div>
+  </div>
+
+  <!-- Section Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngFor="let stat of statsCards" [class]="'stat-card--' + stat.couleur">
+      <div class="stat-icon">
+        <i class="fas" [class]="stat.icone"></i>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{ stat.valeur }}</h3>
+        <p class="stat-label">{{ stat.titre }}</p>
+        <span class="stat-evolution" [class.positive]="stat.evolutionPositive" [class.negative]="!stat.evolutionPositive" *ngIf="stat.evolution">
+          <i class="fas" [class.fa-arrow-up]="stat.evolutionPositive" [class.fa-arrow-down]="!stat.evolutionPositive"></i>
+          {{ stat.evolution }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Filtres et Tableau -->
+  <div class="content-card">
+
+    <!-- Barre d'outils -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            placeholder="Rechercher un produit..."
+            [(ngModel)]="recherche"
+            (input)="appliquerFiltres()">
+        </div>
+
+        <div class="filter-group">
+          <select [(ngModel)]="filtreStatut" (change)="appliquerFiltres()">
+            <option value="tous">Tous les statuts</option>
+            <option value="en_stock">En Stock</option>
+            <option value="stock_faible">Stock Faible</option>
+            <option value="rupture">Rupture</option>
+          </select>
+
+          <select [(ngModel)]="filtreCategorie" (change)="appliquerFiltres()">
+            <option value="toutes">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <span class="selection-info" *ngIf="produitsSelectionnes.length > 0">
+          {{ produitsSelectionnes.length }} sélectionné(s)
+        </span>
+        <button class="btn btn-secondary" (click)="exporterProduits()" [disabled]="produitsSelectionnes.length === 0">
+          <i class="fas fa-download"></i>
+          Exporter
+        </button>
+      </div>
+    </div>
+
+    <!-- Tableau des produits -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th class="col-checkbox">
+            <input
+              type="checkbox"
+              [(ngModel)]="selectionnerTous"
+              (change)="toggleSelectionTous()">
+          </th>
+          <th class="col-code">Code</th>
+          <th class="col-produit">Produit</th>
+          <th class="col-categorie">Catégorie</th>
+          <th class="col-prix">Prix</th>
+          <th class="col-quantite">Qté</th>
+          <th class="col-statut">Statut</th>
+          <th class="col-date">Date Création</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let produit of produitsPagines" [class.selected]="estSelectionne(produit.id)">
+          <td class="col-checkbox">
+            <input
+              type="checkbox"
+              [checked]="estSelectionne(produit.id)"
+              (change)="toggleSelectionProduit(produit.id)">
+          </td>
+          <td class="col-code">
+            <span class="code-badge">{{ produit.code }}</span>
+          </td>
+          <td class="col-produit">
+            <div class="produit-info">
+              <div class="produit-avatar">
+                <i class="fas fa-box"></i>
+              </div>
+              <div class="produit-details">
+                <span class="produit-nom">{{ produit.nom }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="col-categorie">
+            <span class="categorie-badge">{{ produit.categorie }}</span>
+          </td>
+          <td class="col-prix">
+            <span class="prix">{{ produit.prix | currency:'EUR':'symbol':'1.0-0' }}</span>
+          </td>
+          <td class="col-quantite">
+            <span class="quantite" [class.faible]="produit.quantite <= 10">{{ produit.quantite }}</span>
+          </td>
+          <td class="col-statut">
+              <span class="statut-badge" [class]="getClasseStatut(produit.statut)">
+                {{ getLabelStatut(produit.statut) }}
+              </span>
+          </td>
+          <td class="col-date">{{ produit.dateCreation | date:'dd/MM/yyyy' }}</td>
+          <td class="col-actions">
+            <div class="action-buttons">
+              <button class="btn-action btn-edit" title="Modifier">
+                <i class="fas fa-pen"></i>
+              </button>
+              <button class="btn-action btn-delete" (click)="supprimerProduit(produit.id)" title="Supprimer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- État vide -->
+        <tr *ngIf="produitsPagines.length === 0" class="empty-row">
+          <td colspan="9">
+            <div class="empty-state">
+              <i class="fas fa-box-open"></i>
+              <p>Aucun produit trouvé</p>
+              <span>Essayez de modifier vos filtres de recherche</span>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <!-- Pagination -->
+    <div class="pagination-bar" *ngIf="totalPages > 0">
+      <div class="pagination-left">
+        <div class="items-per-page">
+          <label>Afficher :</label>
+          <select [(ngModel)]="itemsParPage" (change)="onItemsParPageChange()">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+          <span>par page</span>
+        </div>
+        <div class="pagination-info">
+          {{ getPaginationInfo() }}
+        </div>
+      </div>
+
+      <div class="pagination-controls" *ngIf="totalPages > 1">
+        <button
+          class="btn-page btn-first"
+          [disabled]="pageActuelle === 1"
+          (click)="changerPage(1)"
+          title="Première page">
+          <i class="fas fa-angle-double-left"></i>
+        </button>
+
+        <button
+          class="btn-page btn-prev"
+          [disabled]="pageActuelle === 1"
+          (click)="changerPage(pageActuelle - 1)"
+          title="Page précédente">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <ng-container *ngFor="let page of getPagesVisibles()">
+          <button
+            *ngIf="page !== -1"
+            class="btn-page"
+            [class.active]="pageActuelle === page"
+            (click)="changerPage(page)">
+            {{ page }}
+          </button>
+          <span *ngIf="page === -1" class="page-ellipsis">...</span>
+        </ng-container>
+
+        <button
+          class="btn-page btn-next"
+          [disabled]="pageActuelle === totalPages"
+          (click)="changerPage(pageActuelle + 1)"
+          title="Page suivante">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <button
+          class="btn-page btn-last"
+          [disabled]="pageActuelle === totalPages"
+          (click)="changerPage(totalPages)"
+          title="Dernière page">
+          <i class="fas fa-angle-double-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
