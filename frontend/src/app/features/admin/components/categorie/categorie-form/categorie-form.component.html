@@ -10,7 +10,7 @@
           <i class="fas fa-folder-plus"></i>
         </div>
         <div class="header-text">
-          <h2 class="modal-title">Nouvelle catégorie</h2>
+          <h2 class="modal-title">Nouvelle catégorie </h2>
           <p class="modal-subtitle">Créez une nouvelle catégorie de produits</p>
         </div>
       </div>
@@ -35,7 +35,7 @@
                 type="text"
                 id="nomCategorie"
                 name="nomCategorie"
-                [(ngModel)]="categorie.nom"
+                [(ngModel)]="categorie.name"
                 class="form-input"
                 placeholder="Ex: Électronique, Vêtements..."
                 required
@@ -49,25 +49,26 @@
             </div>
           </div>
 
-          <!-- Description -->
+          <!-- Unité -->
           <div class="form-group">
-            <label for="description" class="form-label">
-              <i class="fas fa-align-left"></i>
-              Description
+            <label for="unite" class="form-label">
+              <i class="fas fa-ruler"></i>
+              Unité
             </label>
-            <div class="input-wrapper textarea-wrapper">
-              <textarea
-                id="description"
-                name="description"
-                [(ngModel)]="categorie.description"
-                class="form-textarea"
-                placeholder="Description de la catégorie (optionnel)"
-                rows="3"></textarea>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="unite"
+                name="unite"
+                [(ngModel)]="categorie.unity"
+                class="form-input"
+                placeholder="Ex: kg, litre, pièce..."
+                #uniteInput="ngModel">
               <div class="input-line"></div>
+              <i class="fas fa-pen input-icon"></i>
             </div>
           </div>
         </div>
-
 
       </form>
     </div>
@@ -75,7 +76,7 @@
     <!-- Footer -->
     <div class="modal-footer">
       <div class="footer-info">
-        <span class="required-hint"><span class="dot"> </span> Champs obligatoires</span>
+        <span class="required-hint"><span class="dot"></span> Champs obligatoires</span>
       </div>
       <div class="footer-actions">
         <button

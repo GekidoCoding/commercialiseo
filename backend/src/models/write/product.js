@@ -14,13 +14,14 @@ const productSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
-        attributes: {
+        specs: {
             type: mongoose.Schema.Types.Mixed,
             default: {},
         },
         releaseDate: {
             type: Date,
         },
+
     },
     { timestamps: { createdAt: 'createdAt', updatedAt: false } }
 );

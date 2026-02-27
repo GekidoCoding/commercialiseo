@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const {ROLES} = require("../../constants/roles");
-const {TYPE_PROMOTION} = require("../../constants/type_promotion");
+const TYPE_PROMOTION = require("../../constants/type_promotion");
 
 const promotionReadSchema = new mongoose.Schema(
     {

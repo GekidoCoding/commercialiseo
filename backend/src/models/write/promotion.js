@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const TYPE_PROMOTION = require('../../constants/type_promotion');
 const promotionSchema = new mongoose.Schema(
     {
         value: {

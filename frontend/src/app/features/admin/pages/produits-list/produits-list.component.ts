@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {ProduitsFormComponent} from '../../components/produit/produits-form/produits-form.component';
+import {ProduitsAddFormComponent} from '../../components/produit/produits-add-form/produits-add-form.component';
 
 interface Produit {
   id: number;
@@ -336,7 +336,7 @@ export class ProduitsListComponent implements OnInit {
   }
   openAddModal(): void {
     const options = {};
-    const modal = this.modalService.open(ProduitsFormComponent, options);
+    const modal = this.modalService.open(ProduitsAddFormComponent, options);
   }
 
 

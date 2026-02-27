@@ -362,7 +362,7 @@
 }
 
 .data-table th {
-  background: #1f8064;
+  background: var(--gray-800);
   color: var(--white);
   padding: 0.875rem 1rem;
   font-weight: 600;

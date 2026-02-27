@@ -1,36 +1,30 @@
-import { Component, EventEmitter, Output, Input, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbToast} from '@ng-bootstrap/ng-bootstrap';
+import {PublicService} from '../../../../../shared/services/public.service';
+import {Category} from '../../../../../shared/model/category';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {ToastService} from '../../../../../shared/services/toast.service';
 
-interface Attribut {
-  id: number;
-  nom: string;
-  type: string;
-  obligatoire: boolean;
-  isEditing: boolean;
-}
+
 
 @Component({
   selector: 'app-categorie-form',
   templateUrl: './categorie-form.component.html',
   styleUrls: ['./categorie-form.component.css'],
-  standalone:false
+  standalone: false
 })
 export class CategorieFormComponent implements OnInit {
 
-  categorie = {
-    nom: '',
-    description: ''
-  };
+  categorie: Category = { _id: '', name: '', unity: '' };
 
-  attributs: Attribut[] = [];
-  private nextAttributId = 1;
-
-  constructor(private elementRef: ElementRef,
-              private modalService: NgbModal,
-              private activeModal: NgbActiveModal,
-              ) {}
+  constructor(
+    private activeModal: NgbActiveModal,
+    private categorieService: PublicService ,
+    private toastService: ToastService,
+    // Injection du service
+  ) {}
 
   ngOnInit(): void {
     this.resetForm();
@@ -38,99 +32,40 @@ export class CategorieFormComponent implements OnInit {
 
   resetForm(): void {
     this.categorie = {
-      nom: '',
-      description: ''
-    };
-    this.attributs = [];
-    this.nextAttributId = 1;
+      _id: '', name: '', unity: '' };
   }
 
-  // Ajouter un attribut (ligne dans le tableau)
-  ajouterAttribut(): void {
-    // Vérifier si la dernière ligne est vide
-    if (this.attributs.length > 0) {
-      const dernier = this.attributs[this.attributs.length - 1];
-      if (dernier.isEditing && (!dernier.nom.trim() || !dernier.type)) {
-        return; // Empêcher d'ajouter si la dernière est vide
-      }
-    }
-
-    const nouvelAttribut: Attribut = {
-      id: this.nextAttributId++,
-      nom: '',
-      type: 'text',
-      obligatoire: false,
-      isEditing: true
-    };
-
-    this.attributs.push(nouvelAttribut);
-  }
-
-  // Confirmer l'attribut (quand on clique en dehors)
-  confirmerAttribut(attribut: Attribut): void {
-    if (attribut.nom.trim() && attribut.type) {
-      attribut.isEditing = false;
-    }
-  }
-
-  // Supprimer un attribut
-  supprimerAttribut(id: number): void {
-    this.attributs = this.attributs.filter(a => a.id !== id);
-  }
-
-  // Éditer un attribut existant
-  editerAttribut(attribut: Attribut): void {
-    attribut.isEditing = true;
-  }
-
-  // Fermer le form
+  // Fermer le modal
   onClose(): void {
     this.resetForm();
-    this.activeModal.close('Cross click');
-
+    this.activeModal.dismiss('Cross click');
   }
-  saveCategorie(): void {}
-  // Sauvegarder
+
+  // Sauvegarder la catégorie via le service
+  saveCategorie(): void {
+    this.categorieService.createCategory(this.categorie).subscribe({
+      next: (response) => {
+        console.log('Catégorie créée avec succès:', response);
+        this.toastService.success('Catégorie créée avec succès');
+        this.activeModal.close(response); // Ferme le modal et retourne la réponse
+      },
+      error: (error) => {
+        console.error('Erreur lors de la création:', error);
+        // Gestion d'erreur optionnelle ici
+      }
+    });
+  }
+
+  // Validation du formulaire
   onSave(): void {
     if (this.isFormValid()) {
-      const data = {
-        ...this.categorie,
-        attributs: this.attributs
-          .filter(a => a.nom.trim() && a.type)
-          .map(a => ({
-            nom: a.nom,
-            type: a.type,
-            obligatoire: a.obligatoire
-          }))
-      };
-
       this.saveCategorie();
-      this.resetForm();
-
     }
   }
 
   // Validation
   isFormValid(): boolean {
-    return !!(this.categorie.nom.trim());
+    return !!(this.categorie.name.trim());
   }
-
-  // Types d'attributs disponibles
-  typesAttribut = [
-    { value: 'text', label: 'Texte' },
-    { value: 'number', label: 'Nombre' },
-    { value: 'date', label: 'Date' },
-    { value: 'boolean', label: 'Oui/Non' },
-    { value: 'select', label: 'Liste déroulante' }
-  ];
-
-  // Fermer si clic sur l'overlay
-  onOverlayClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.onClose();
-    }
-  }
-
-
 
 }

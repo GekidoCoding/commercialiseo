@@ -6,14 +6,16 @@
 }
 
 :root {
-  --green-dark:     #047857;
-  --green-light:    #10b981;
-  --green-lighter:  #d1fae5;
+  --green-primary: #059669;
+  --green-dark: #047857;
+  --green-light: #106323;
+  --red-light: #f44336;
+  --green-lighter: #d1fae5;
+  --white: #ffffff;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
   --green-bg:       #ecfdf5;
-  --white:          #ffffff;
-  --gray-50:        #f9fafb;
-  --gray-100:       #f3f4f6;
-  --gray-200:       #e5e7eb;
   --gray-300:       #d1d5db;
   --gray-400:       #9ca3af;
 
@@ -28,4 +30,49 @@ body {
   color: var(--gray-800);
   line-height: 1.6;
   background-color: var(--white);
+}
+
+.success-snackbar {
+  background: var(--green-light);
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 0px !important;
+  /*box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);*/
+  padding: 14px 20px !important;
+  font-size: 14px;
+}
+.success-snackbar .mdc-snackbar__surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.error-snackbar {
+  background: var(--red-light); /* utilise ta variable CSS pour le rouge */
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 0px !important;
+  /*box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);*/
+  padding: 14px 20px !important;
+  font-size: 14px;
+}
+
+.error-snackbar .mdc-snackbar__surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Bouton OK */
+.error-snackbar .mat-mdc-snack-bar-action {
+  color: #ffebee !important; /* clair sur rouge */
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 4px 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover du bouton */
+.error-snackbar .mat-mdc-snack-bar-action:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
 }
