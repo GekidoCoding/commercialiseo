@@ -1,18 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {ProduitsAddFormComponent} from '../../components/produit/produits-add-form/produits-add-form.component';
-
-interface Produit {
-  id: number;
-  code: string;
-  nom: string;
-  categorie: string;
-  prix: number;
-  quantite: number;
-  statut: 'en_stock' | 'stock_faible' | 'rupture';
-  dateCreation: string;
-  image?: string;
-}
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ProduitsAddFormComponent } from '../../components/produit/produits-add-form/produits-add-form.component';
+import { AdminService } from '../../services/admin.service';
+import { finalize } from 'rxjs/operators';
+import {ProductRead} from '../../../../shared/model/product-read';
 
 interface StatCard {
   titre: string;
@@ -31,11 +22,16 @@ interface StatCard {
 })
 export class ProduitsListComponent implements OnInit {
   protected readonly Math = Math;
+
+  // Loading state
+  isLoading: boolean = false;
+  skeletonRows: number[] = Array(5).fill(0); // 5 lignes de skeleton
+
   // Données des statistiques
   statsCards: StatCard[] = [
     {
       titre: 'Total Produits',
-      valeur: 1248,
+      valeur: 1258,
       icone: 'fa-box',
       couleur: 'primary',
       evolution: '+12%',
@@ -43,15 +39,16 @@ export class ProduitsListComponent implements OnInit {
     },
     {
       titre: 'En Stock',
-      valeur: 892,
+      valeur: 1025,
       icone: 'fa-check-circle',
       couleur: 'success',
       evolution: '+5%',
       evolutionPositive: true
     },
+
     {
       titre: 'Stock Faible',
-      valeur: 156,
+      valeur: 198,
       icone: 'fa-exclamation-triangle',
       couleur: 'warning',
       evolution: '-3%',
@@ -59,7 +56,7 @@ export class ProduitsListComponent implements OnInit {
     },
     {
       titre: 'Rupture de Stock',
-      valeur: 42,
+      valeur: 35,
       icone: 'fa-times-circle',
       couleur: 'danger',
       evolution: '+8%',
@@ -68,8 +65,8 @@ export class ProduitsListComponent implements OnInit {
   ];
 
   // Liste des produits
-  produits: Produit[] = [];
-  produitsFiltres: Produit[] = [];
+  produits: ProductRead[] = [];
+  produitsFiltres: ProductRead[] = [];
 
   // Filtres
   recherche: string = '';
@@ -82,14 +79,18 @@ export class ProduitsListComponent implements OnInit {
   totalPages: number = 1;
 
   // Sélection
-  produitsSelectionnes: number[] = [];
+  produitsSelectionnes: string[] = []; // Changé en string pour _id MongoDB
   selectionnerTous: boolean = false;
 
   // Categories uniques pour le filtre
   categories: string[] = [];
 
+  // Message d'erreur
+  errorMessage: string = '';
+
   constructor(
-    public modalService:NgbModal,
+    public modalService: NgbModal,
+    private adminService: AdminService
   ) {}
 
   ngOnInit(): void {
@@ -97,96 +98,52 @@ export class ProduitsListComponent implements OnInit {
   }
 
   chargerProduits(): void {
-    // Données mockées - remplacer par appel API
-    this.produits = [
-      {
-        id: 1,
-        code: 'PRD-001',
-        nom: 'iPhone 15 Pro Max',
-        categorie: 'Téléphonie',
-        prix: 1250,
-        quantite: 45,
-        statut: 'en_stock',
-        dateCreation: '2024-01-15'
-      },
-      {
-        id: 2,
-        code: 'PRD-002',
-        nom: 'MacBook Air M3',
-        categorie: 'Informatique',
-        prix: 1499,
-        quantite: 12,
-        statut: 'stock_faible',
-        dateCreation: '2024-01-14'
-      },
-      {
-        id: 3,
-        code: 'PRD-003',
-        nom: 'AirPods Pro 2',
-        categorie: 'Accessoires',
-        prix: 249,
-        quantite: 0,
-        statut: 'rupture',
-        dateCreation: '2024-01-13'
-      },
-      {
-        id: 4,
-        code: 'PRD-004',
-        nom: 'iPad Air 5',
-        categorie: 'Tablette',
-        prix: 699,
-        quantite: 78,
-        statut: 'en_stock',
-        dateCreation: '2024-01-12'
-      },
-      {
-        id: 5,
-        code: 'PRD-005',
-        nom: 'Apple Watch Series 9',
-        categorie: 'Accessoires',
-        prix: 429,
-        quantite: 5,
-        statut: 'stock_faible',
-        dateCreation: '2024-01-11'
-      },
-      {
-        id: 6,
-        code: 'PRD-006',
-        nom: 'Samsung Galaxy S24',
-        categorie: 'Téléphonie',
-        prix: 999,
-        quantite: 34,
-        statut: 'en_stock',
-        dateCreation: '2024-01-10'
-      },
-      {
-        id: 7,
-        code: 'PRD-007',
-        nom: 'Dell XPS 13',
-        categorie: 'Informatique',
-        prix: 1199,
-        quantite: 0,
-        statut: 'rupture',
-        dateCreation: '2024-01-09'
-      },
-      {
-        id: 8,
-        code: 'PRD-008',
-        nom: 'Sony WH-1000XM5',
-        categorie: 'Audio',
-        prix: 399,
-        quantite: 23,
-        statut: 'en_stock',
-        dateCreation: '2024-01-08'
-      }
-    ];
+    this.isLoading = true;
+    this.errorMessage = '';
 
-    this.extraireCategories();
-    this.appliquerFiltres();
+    this.adminService.findAllProducts()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          if (response.success && response.data) {
+            this.produits = response.data;
+            this.extraireCategories();
+            this.appliquerFiltres();
+          } else {
+            this.errorMessage = 'Erreur lors du chargement des produits';
+          }
+        },
+        error: (error) => {
+          this.errorMessage = error.message || 'Une erreur est survenue lors du chargement';
+          console.error('Erreur chargement produits:', error);
+        }
+      });
+  }
+
+  calculerStatistiques(): void {
+    // const total = this.produits.length;
+    // const enStock = this.produits.filter(p => p.quantity > 10).length;
+    // const stockFaible = this.produits.filter(p => p.quantity > 0 && p.quantity <= 10).length;
+    // const rupture = this.produits.filter(p => p.quantity === 0).length;
+    // const total = 0;
+    // const enStock = 0;
+    // const stockFaible = 0;
+    // const rupture = 0;
+    //
+    // this.statsCards[0].valeur = total;
+    // this.statsCards[1].valeur = enStock;
+    // this.statsCards[2].valeur = stockFaible;
+    // this.statsCards[3].valeur = rupture;
   }
 
   extraireCategories(): void {
-    this.categories = [...new Set(this.produits.map(p => p.categorie))];
+    console.log(this.produits);
+    this.categories = [...new Set(this.produits.map(p => p.category.name))].filter(Boolean);
   }
 
   appliquerFiltres(): void {
@@ -196,32 +153,40 @@ export class ProduitsListComponent implements OnInit {
     if (this.recherche.trim()) {
       const terme = this.recherche.toLowerCase();
       resultats = resultats.filter(p =>
-        p.nom.toLowerCase().includes(terme) ||
-        p.code.toLowerCase().includes(terme) ||
-        p.categorie.toLowerCase().includes(terme)
+        p.product.name?.toLowerCase().includes(terme) ||
+        p.product.name?.toLowerCase().includes(terme) ||
+        p.category.name?.toLowerCase().includes(terme)
       );
     }
 
     // Filtre statut
     if (this.filtreStatut !== 'tous') {
-      resultats = resultats.filter(p => p.statut === this.filtreStatut);
+      resultats = resultats.filter(p => this.getStatutFromQuantite(p.quantity) === this.filtreStatut);
     }
 
     // Filtre categorie
     if (this.filtreCategorie !== 'toutes') {
-      resultats = resultats.filter(p => p.categorie === this.filtreCategorie);
+      resultats = resultats.filter(p => p.category.name === this.filtreCategorie);
     }
 
     this.produitsFiltres = resultats;
     this.calculerPagination();
     this.pageActuelle = 1;
+    this.produitsSelectionnes = []; // Reset sélection
+    this.selectionnerTous = false;
+  }
+
+  getStatutFromQuantite(quantite: number): string {
+    if (quantite === 0) return 'rupture';
+    if (quantite <= 10) return 'stock_faible';
+    return 'en_stock';
   }
 
   calculerPagination(): void {
-    this.totalPages = Math.ceil(this.produitsFiltres.length / this.itemsParPage);
+    this.totalPages = Math.ceil(this.produitsFiltres.length / this.itemsParPage) || 1;
   }
 
-  get produitsPagines(): Produit[] {
+  get produitsPagines(): ProductRead[] {
     const debut = (this.pageActuelle - 1) * this.itemsParPage;
     return this.produitsFiltres.slice(debut, debut + this.itemsParPage);
   }
@@ -229,18 +194,20 @@ export class ProduitsListComponent implements OnInit {
   changerPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.pageActuelle = page;
+      this.selectionnerTous = false;
+      this.produitsSelectionnes = [];
     }
   }
 
   toggleSelectionTous(): void {
     if (this.selectionnerTous) {
-      this.produitsSelectionnes = this.produitsPagines.map(p => p.id);
+      this.produitsSelectionnes = this.produitsPagines.map(p => p._id!).filter(Boolean);
     } else {
       this.produitsSelectionnes = [];
     }
   }
 
-  toggleSelectionProduit(id: number): void {
+  toggleSelectionProduit(id: string): void {
     const index = this.produitsSelectionnes.indexOf(id);
     if (index > -1) {
       this.produitsSelectionnes.splice(index, 1);
@@ -250,7 +217,7 @@ export class ProduitsListComponent implements OnInit {
     this.selectionnerTous = this.produitsSelectionnes.length === this.produitsPagines.length;
   }
 
-  estSelectionne(id: number): boolean {
+  estSelectionne(id: string): boolean {
     return this.produitsSelectionnes.includes(id);
   }
 
@@ -267,9 +234,12 @@ export class ProduitsListComponent implements OnInit {
     return `statut-${statut}`;
   }
 
-  supprimerProduit(id: number): void {
+  supprimerProduit(id: string): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-      this.produits = this.produits.filter(p => p.id !== id);
+      // TODO: Implémenter la suppression via API
+      this.produits = this.produits.filter(p => p._id !== id);
+      this.calculerStatistiques();
+      this.extraireCategories();
       this.appliquerFiltres();
     }
   }
@@ -277,9 +247,12 @@ export class ProduitsListComponent implements OnInit {
   exporterProduits(): void {
     console.log('Export des produits:', this.produitsSelectionnes);
   }
+
   onItemsParPageChange(): void {
     this.pageActuelle = 1;
     this.calculerPagination();
+    this.produitsSelectionnes = [];
+    this.selectionnerTous = false;
   }
 
   getPaginationInfo(): string {
@@ -297,47 +270,53 @@ export class ProduitsListComponent implements OnInit {
         pages.push(i);
       }
     } else {
-      // Toujours afficher la première page
       pages.push(1);
 
       let startPage = Math.max(2, this.pageActuelle - 1);
       let endPage = Math.min(this.totalPages - 1, this.pageActuelle + 1);
 
-      // Ajuster si on est au début
       if (this.pageActuelle <= 3) {
         endPage = Math.min(this.totalPages - 1, 4);
       }
 
-      // Ajuster si on est à la fin
       if (this.pageActuelle >= this.totalPages - 2) {
         startPage = Math.max(2, this.totalPages - 3);
       }
 
-      // Ajouter ellipsis après la première page si nécessaire
       if (startPage > 2) {
-        pages.push(-1); // -1 représente ...
+        pages.push(-1);
       }
 
-      // Ajouter les pages du milieu
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
 
-      // Ajouter ellipsis avant la dernière page si nécessaire
       if (endPage < this.totalPages - 1) {
         pages.push(-1);
       }
 
-      // Toujours afficher la dernière page
       pages.push(this.totalPages);
     }
 
     return pages;
   }
+
   openAddModal(): void {
     const options = {};
     const modal = this.modalService.open(ProduitsAddFormComponent, options);
+
+    // Recharger après fermeture si produit ajouté
+    modal.result.then(
+      (result) => {
+        if (result === 'saved') {
+          this.chargerProduits();
+        }
+      },
+      () => {} // Dismiss
+    );
   }
 
-
+  retryLoad(): void {
+    this.chargerProduits();
+  }
 }

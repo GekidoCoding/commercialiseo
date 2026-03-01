@@ -65,8 +65,7 @@ const adminController = {
             if (!result.success) {
                 return errorResponse(res, result.error, result.code || 500);
             }
-
-            return createdResponse(res, result, 'Liste des produits récupérée avec succès');
+            return res.status(200).json(result, 'Liste des produits récupérée avec succès');
         }),
     ],
 };

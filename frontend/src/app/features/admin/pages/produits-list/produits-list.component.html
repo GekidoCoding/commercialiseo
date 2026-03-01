@@ -5,21 +5,35 @@
     <div class="header-content">
       <h1 class="page-title">Liste des Produits</h1>
       <nav class="breadcrumbs">
-        <a >Admin</a>
+        <a>Admin</a>
         <span class="separator">></span>
         <span class="current">Produits</span>
       </nav>
     </div>
     <div class="header-actions">
-      <button class="btn btn-primary" (click)="openAddModal()">
+      <button class="btn btn-primary" (click)="openAddModal()" [disabled]="isLoading">
         <i class="fas fa-plus"></i>
         Ajouter un Produit
       </button>
     </div>
   </div>
 
+  <!-- Loading State pour les Stats - SKELETON VERT BRILLANT -->
+  <div class="stats-grid stats-skeleton" *ngIf="isLoading">
+    <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+      <div class="skeleton-icon-shine">
+        <div class="shine-effect"></div>
+      </div>
+      <div class="stat-content">
+        <div class="skeleton-text-shine skeleton-value"></div>
+        <div class="skeleton-text-shine skeleton-label-sm"></div>
+        <div class="skeleton-text-shine skeleton-evolution"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Section Statistiques -->
-  <div class="stats-grid">
+  <div class="stats-grid" *ngIf="!isLoading">
     <div class="stat-card" *ngFor="let stat of statsCards" [class]="'stat-card--' + stat.couleur">
       <div class="stat-icon">
         <i class="fas" [class]="stat.icone"></i>
@@ -47,18 +61,19 @@
             type="text"
             placeholder="Rechercher un produit..."
             [(ngModel)]="recherche"
-            (input)="appliquerFiltres()">
+            (input)="appliquerFiltres()"
+            [disabled]="isLoading">
         </div>
 
         <div class="filter-group">
-          <select [(ngModel)]="filtreStatut" (change)="appliquerFiltres()">
+          <select [(ngModel)]="filtreStatut" (change)="appliquerFiltres()" [disabled]="isLoading">
             <option value="tous">Tous les statuts</option>
             <option value="en_stock">En Stock</option>
             <option value="stock_faible">Stock Faible</option>
             <option value="rupture">Rupture</option>
           </select>
 
-          <select [(ngModel)]="filtreCategorie" (change)="appliquerFiltres()">
+          <select [(ngModel)]="filtreCategorie" (change)="appliquerFiltres()" [disabled]="isLoading">
             <option value="toutes">Toutes les catégories</option>
             <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
           </select>
@@ -66,18 +81,86 @@
       </div>
 
       <div class="toolbar-right">
-        <span class="selection-info" *ngIf="produitsSelectionnes.length > 0">
+        <span class="selection-info" *ngIf="produitsSelectionnes.length > 0 && !isLoading">
           {{ produitsSelectionnes.length }} sélectionné(s)
         </span>
-        <button class="btn btn-secondary" (click)="exporterProduits()" [disabled]="produitsSelectionnes.length === 0">
+        <button class="btn btn-secondary" (click)="exporterProduits()" [disabled]="produitsSelectionnes.length === 0 || isLoading">
           <i class="fas fa-download"></i>
           Exporter
         </button>
       </div>
     </div>
 
+    <!-- Message d'erreur -->
+    <div class="error-container" *ngIf="errorMessage && !isLoading">
+      <div class="error-icon">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <p class="error-text">{{ errorMessage }}</p>
+      <button class="btn btn-primary" (click)="retryLoad()">
+        <i class="fas fa-redo"></i>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Table Skeleton Loading VERT BRILLANT -->
+    <div class="table-skeleton-container" *ngIf="isLoading">
+      <!-- Header Skeleton -->
+      <div class="skeleton-table-header">
+        <div class="skeleton-header-cell" *ngFor="let header of ['', '', '', '', '', '', '', '']">
+          <div class="skeleton-shimmer"></div>
+        </div>
+      </div>
+
+      <!-- Rows Skeleton -->
+      <div class="skeleton-table-body">
+        <div class="skeleton-row-animated" *ngFor="let row of skeletonRows; let i = index" [style.animation-delay.ms]="i * 100">
+          <div class="skeleton-cell-animated skeleton-checkbox-cell">
+            <div class="skeleton-box-shine"></div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-code-cell">
+            <div class="skeleton-line-shine short"></div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-product-cell">
+            <div class="skeleton-avatar-shine"></div>
+            <div class="skeleton-lines-group">
+              <div class="skeleton-line-shine"></div>
+              <div class="skeleton-line-shine small"></div>
+            </div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-category-cell">
+            <div class="skeleton-badge-shine"></div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-quantity-cell">
+            <div class="skeleton-line-shine tiny"></div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-status-cell">
+            <div class="skeleton-status-shine"></div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-date-cell">
+            <div class="skeleton-line-shine medium"></div>
+          </div>
+          <div class="skeleton-cell-animated skeleton-actions-cell">
+            <div class="skeleton-action-shine"></div>
+            <div class="skeleton-action-shine"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination Skeleton -->
+      <div class="skeleton-pagination">
+        <div class="skeleton-pagination-left">
+          <div class="skeleton-line-shine small"></div>
+          <div class="skeleton-line-shine medium"></div>
+        </div>
+        <div class="skeleton-pagination-right">
+          <div class="skeleton-page-shine" *ngFor="let p of [1,2,3,4,5]"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tableau des produits -->
-    <div class="table-container">
+    <div class="table-container" *ngIf="!isLoading && !errorMessage">
       <table class="data-table">
         <thead>
         <tr>
@@ -90,7 +173,6 @@
           <th class="col-code">Code</th>
           <th class="col-produit">Produit</th>
           <th class="col-categorie">Catégorie</th>
-          <th class="col-prix">Prix</th>
           <th class="col-quantite">Qté</th>
           <th class="col-statut">Statut</th>
           <th class="col-date">Date Création</th>
@@ -98,47 +180,49 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let produit of produitsPagines" [class.selected]="estSelectionne(produit.id)">
+        <tr *ngFor="let produit of produitsPagines" [class.selected]="estSelectionne(produit._id!)">
           <td class="col-checkbox">
             <input
               type="checkbox"
-              [checked]="estSelectionne(produit.id)"
-              (change)="toggleSelectionProduit(produit.id)">
+              [checked]="estSelectionne(produit._id!)"
+              (change)="toggleSelectionProduit(produit._id!)">
           </td>
           <td class="col-code">
-            <span class="code-badge">{{ produit.code }}</span>
+            <span class="code-badge">{{ produit.product.code }}</span>
           </td>
           <td class="col-produit">
             <div class="produit-info">
-              <div class="produit-avatar">
-                <i class="fas fa-box"></i>
+              <div class="produit-avatar" *ngIf="produit.product.image; else noImage">
+                <img [src]="produit.product.image" [alt]="produit.product.name" class="produit-image">
               </div>
+              <ng-template #noImage>
+                <div class="produit-avatar">
+                  <i class="fas fa-box"></i>
+                </div>
+              </ng-template>
               <div class="produit-details">
-                <span class="produit-nom">{{ produit.nom }}</span>
+                <span class="produit-nom">{{ produit.product.name }}</span>
               </div>
             </div>
           </td>
           <td class="col-categorie">
-            <span class="categorie-badge">{{ produit.categorie }}</span>
-          </td>
-          <td class="col-prix">
-            <span class="prix">{{ produit.prix | currency:'EUR':'symbol':'1.0-0' }}</span>
+            <span class="categorie-badge">{{ produit.category.name }}</span>
           </td>
           <td class="col-quantite">
-            <span class="quantite" [class.faible]="produit.quantite <= 10">{{ produit.quantite }}</span>
+            <span class="quantite" [class.faible]="produit.quantity <= 10">{{ produit.quantity || 0 }}</span>
           </td>
           <td class="col-statut">
-              <span class="statut-badge" [class]="getClasseStatut(produit.statut)">
-                {{ getLabelStatut(produit.statut) }}
+              <span class="statut-badge" [class]="getClasseStatut(getStatutFromQuantite(produit.quantity))">
+                {{ getLabelStatut(getStatutFromQuantite(produit.quantity)) }}
               </span>
           </td>
-          <td class="col-date">{{ produit.dateCreation | date:'dd/MM/yyyy' }}</td>
+          <td class="col-date">{{ produit.product.releaseDate | date:'dd/MM/yyyy' }}</td>
           <td class="col-actions">
             <div class="action-buttons">
               <button class="btn-action btn-edit" title="Modifier">
                 <i class="fas fa-pen"></i>
               </button>
-              <button class="btn-action btn-delete" (click)="supprimerProduit(produit.id)" title="Supprimer">
+              <button class="btn-action btn-delete" (click)="supprimerProduit(produit._id!)" title="Supprimer">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -160,8 +244,7 @@
     </div>
 
     <!-- Pagination -->
-    <!-- Pagination -->
-    <div class="pagination-bar" *ngIf="totalPages > 0">
+    <div class="pagination-bar" *ngIf="!isLoading && !errorMessage && totalPages > 0">
       <div class="pagination-left">
         <div class="items-per-page">
           <label>Afficher :</label>

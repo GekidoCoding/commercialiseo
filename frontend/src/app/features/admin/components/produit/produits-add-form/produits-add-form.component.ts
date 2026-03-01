@@ -277,6 +277,7 @@ export class ProduitsAddFormComponent implements OnInit {
 
     const productData: Product = {
       _id: '',
+      image:'',
       name: this.produit.nom.trim(),
       categoryId: this.produit.categorieId!,
       code: this.produit.code.trim(),
