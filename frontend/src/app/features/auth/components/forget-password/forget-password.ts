@@ -45,7 +45,7 @@ export class ForgetPassword implements OnInit {
     this.showError = false;
     this.errorMessage = '';
 
-    // Appel au service d'authentification
+    // Appel au services d'authentification
     this.authService.sendCodePassword(this.user.email,true).subscribe({
       next: (response) => {
         this.isSubmitting = false;

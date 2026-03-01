@@ -5,3 +5,5 @@ const TYPE_PROMOTION = {
     DISCOUNT: 'discount',
 };
 
+module.exports = TYPE_PROMOTION;
+

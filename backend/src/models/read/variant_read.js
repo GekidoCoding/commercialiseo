@@ -26,6 +26,11 @@ const variantReadSchema = new mongoose.Schema(
             type: [mongoose.Schema.Types.Mixed],
             default: [],
         },
+        isMain: {
+            type: Boolean,
+            default: false,
+        },
+
         images: {
             type: [mongoose.Schema.Types.Mixed],
             default: [],

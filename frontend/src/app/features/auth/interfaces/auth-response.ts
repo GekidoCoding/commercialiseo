@@ -1,0 +1,4 @@
+
+interface AuthResponse {
+  message: string;
+}

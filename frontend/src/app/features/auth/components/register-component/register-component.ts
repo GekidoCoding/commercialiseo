@@ -289,7 +289,7 @@ export class RegisterComponent implements OnInit {
     this.isSubmitting = true;
     console.log("role user:"+ this.user.role);
    console.log("role input:"+ this.role);
-    // Appel au service d'authentification
+    // Appel au services d'authentification
     this.authService.registerRequest(this.user.email,this.user.username, this.user.password , this.role).subscribe({
       next: (response) => {
         this.isSubmitting = false;

@@ -22,7 +22,7 @@ export class FooterComponent implements OnInit {
       alert('Veuillez entrer une adresse e-mail valide.');
       return;
     }
-    // TODO : appel service newsletter
+    // TODO : appel services newsletter
     console.log('Abonnement newsletter :', this.newsletterEmail);
     alert(`Merci ! Vous êtes bien inscrit avec l'adresse ${this.newsletterEmail}.`);
     this.newsletterEmail = '';

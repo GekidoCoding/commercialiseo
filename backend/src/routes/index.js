@@ -7,8 +7,8 @@ const express = require('express');
 const router = express.Router();
 
 const authRoutes = require('./authRoutes');
-
-
+const adminRoutes = require('./adminRoutes');
+const publicRoutes = require('./publicRoutes');
 
 // Health check
 router.get('/health', (req, res) => {
@@ -22,5 +22,7 @@ router.get('/health', (req, res) => {
 
 // Routes API
 router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
+router.use('/public', publicRoutes);
 
 module.exports = router;

@@ -4,13 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import {environment} from '../../../../environments/environment';
 
-interface AuthResponse {
-  message: string;
-}
 
-interface LoginResponse {
-  token: string;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -104,11 +98,7 @@ export class AuthService {
     );
   }
 
-  /**
-   * Gestion des erreurs HTTP
-   * @param error Erreur HTTP
-   * @returns Observable avec le message d'erreur
-   */
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Une erreur inconnue est survenue';
 

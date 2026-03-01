@@ -1,5 +1,5 @@
 <!-- Overlay du modal -->
-<div class="modal-overlay" (click)="onOverlayClick($event)">
+<div class="modal-overlay"  >
 
   <div class="modal-container">
 
@@ -17,6 +17,12 @@
       <button class="btn-close" (click)="onClose()" type="button">
         <i class="fas fa-times"></i>
       </button>
+    </div>
+
+    <!-- Message d'erreur global -->
+    <div *ngIf="errorMessage" class="alert alert-danger m-3">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ errorMessage }}
     </div>
 
     <!-- Body -->
@@ -39,7 +45,7 @@
                 name="nom"
                 [(ngModel)]="produit.nom"
                 class="form-input"
-                placeholder="Ex: iPhone 15 Pro Max..."
+                placeholder="Ex: iPhone 14 Pro..."
                 required>
               <div class="input-line"></div>
               <i class="fas fa-box input-icon"></i>
@@ -48,33 +54,69 @@
 
           <!-- Catégorie -->
           <div class="form-group">
-            <label for="categorie" class="form-label">
+            <label class="form-label">
               <i class="fas fa-folder"></i>
               Catégorie <span class="required">*</span>
             </label>
-            <div class="input-wrapper select-wrapper">
-              <select
-                id="categorie"
-                name="categorie"
-                [(ngModel)]="produit.categorieId"
-                class="form-input form-select"
-                required>
-                <option [ngValue]="null">Sélectionner une catégorie</option>
-                <option *ngFor="let cat of categories" [value]="cat.id">
-                  {{ cat.name }}
-                </option>
-              </select>
+            <div class="categorie-wrapper">
+              <div class="input-wrapper custom-select-container">
 
-              <div class="input-line"></div>
-              <i class="fas fa-chevron-down input-icon select-arrow"></i>
+                <!-- Trigger du select -->
+                <div
+                  class="custom-select-trigger"
+                  [class.active]="isDropdownOpen"
+                  [class.disabled]="isLoadingCategories"
+                  (click)="toggleDropdown()">
+                  <i class="fas fa-folder trigger-icon"></i>
+                  <span class="trigger-text" [class.selected]="produit.categorieId">
+                    {{ getSelectedCategoryName() || (isLoadingCategories ? 'Chargement...' : 'Sélectionner une catégorie') }}
+                  </span>
+                  <i class="fas fa-chevron-down select-arrow"></i>
+                </div>
+
+                <div class="input-line"></div>
+
+                <!-- Dropdown des options -->
+                <div class="custom-select-dropdown" *ngIf="isDropdownOpen && !isLoadingCategories">
+
+                  <!-- Option vide -->
+                  <div
+                    class="custom-option empty"
+                    *ngIf="categories.length === 0">
+                    Aucune catégorie disponible
+                  </div>
+
+                  <!-- Liste des catégories -->
+                  <div
+                    class="custom-option"
+                    *ngFor="let cat of categories"
+                    [class.selected]="produit.categorieId === cat._id"
+                    (click)="selectCategory(cat._id)">
+
+                    <!-- Icône de suppression - GRIS ET PEU VISIBLE -->
+                    <button
+                      type="button"
+                      class="delete-category-icon"
+                      (click)="deleteCategory($event, cat)"
+                      title="Supprimer la catégorie '{{ cat.name }}'">
+                      <i class="fas fa-trash"></i>
+                    </button>
+
+                    <span class="option-text">{{ cat.name }}</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Bouton d'ajout -->
+              <button
+                type="button"
+                class="btn-add-category"
+                (click)="openCategorieModal()"
+                title="Ajouter une catégorie">
+                <i class="fas fa-plus"></i>
+              </button>
             </div>
-            <button
-              type="button"
-              class="btn-add-category"
-              (click)="openCategorieModal()"
-              title="Ajouter une catégorie">
-              <i class="fas fa-plus"></i>
-            </button>
           </div>
 
           <!-- Code -->
@@ -90,7 +132,7 @@
                 name="code"
                 [(ngModel)]="produit.code"
                 class="form-input"
-                placeholder="Ex: PRD-001..."
+                placeholder="Ex: APL-IP14P..."
                 required>
               <div class="input-line"></div>
               <i class="fas fa-hashtag input-icon"></i>
@@ -124,7 +166,10 @@
               <i class="fas fa-list-ul"></i>
               Spécifications techniques
             </label>
-            <span class="section-hint">Définissez les caractéristiques du produit</span>
+            <span class="section-hint">
+              Définissez les caractéristiques du produit.
+              <br><small class="text-muted">Pour les tableaux, utilisez le format: ["valeur1", "valeur2"]</small>
+            </span>
           </div>
 
           <!-- Tableau des spécifications -->
@@ -132,7 +177,7 @@
             <table class="specifications-table">
               <thead>
               <tr>
-                <th class="col-name">Nom</th>
+                <th class="col-name">Nom (clé)</th>
                 <th class="col-value">Valeur</th>
                 <th class="col-actions"></th>
               </tr>
@@ -151,7 +196,7 @@
                       [(ngModel)]="spec.name"
                       [name]="'spec-name-' + spec.id"
                       class="table-input"
-                      placeholder="Ex: Batterie..."
+                      placeholder="Ex: screenSize..."
                       (blur)="confirmSpecification(spec)"
                       (keyup.enter)="confirmSpecification(spec)">
                   </ng-container>
@@ -170,7 +215,7 @@
                       [(ngModel)]="spec.value"
                       [name]="'spec-value-' + spec.id"
                       class="table-input"
-                      placeholder="Ex: 5000mAh..."
+                      placeholder='Ex: 6.1 inches ou ["128GB", "256GB"]...'
                       (blur)="confirmSpecification(spec)"
                       (keyup.enter)="confirmSpecification(spec)">
                   </ng-container>
@@ -237,7 +282,7 @@
           type="button"
           class="btn btn-primary"
           (click)="onSave()"
-          [disabled]="!isFormValid() || isSubmitting">
+          [disabled]="!isFormValid() || isSubmitting || isLoadingCategories">
           <i class="fas" [class.fa-check]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
           {{ isSubmitting ? 'Enregistrement...' : 'Créer le produit' }}
         </button>

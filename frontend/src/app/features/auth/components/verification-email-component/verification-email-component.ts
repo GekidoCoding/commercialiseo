@@ -3,6 +3,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {AuthService} from '../../services/auth-service';
 import {LoginComponent} from '../login-component/login-component';
 import {RegisterComponent} from '../register-component/register-component';
+import {ToastService} from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-email-verification',
@@ -30,6 +31,7 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
     public modalService: NgbModal,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -210,7 +212,7 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
     const code = this.getFullCode();
     this.isSubmitting = true;
 
-    // Appel au service de vérification
+    // Appel au services de vérification
     this.authService.verifyCode(this.email, code).subscribe({
       next: (response) => {
         this.isSubmitting = false;
@@ -220,7 +222,8 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           // 1. Fermer le modal de vérification
           this.modalService.dismissAll();
-          alert("✅ Compte créé avec succès ! ");
+          this.toastService.success(' Compte créé avec succès ! ');
+          alert("");
           this.openConnexion();
         }, 3000);
       },

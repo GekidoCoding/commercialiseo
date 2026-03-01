@@ -2,7 +2,7 @@
    VARIABLES - Thème du projet
 ============================================ */
 :host {
-  --green-light:    #10b981;
+  --green-light: #0b7814;
   --green-lighter:  #d1fae5;
   --green-bg:       #ecfdf5;
   --white:          #ffffff;
@@ -29,7 +29,7 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
-  z-index: 2000;
+  z-index: 3000;
   display: flex;
   align-items: center;
   justify-content: center;
