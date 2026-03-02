@@ -66,7 +66,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(sanitize);
 
 // Request logging (development only)
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'developpement') {
   app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
