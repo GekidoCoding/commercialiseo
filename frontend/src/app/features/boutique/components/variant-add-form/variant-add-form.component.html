@@ -1,0 +1,252 @@
+<div class="modal-overlay">
+  <div class="modal-container">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-cube"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="modal-title">Nouveau Variant</h2>
+          <p class="modal-subtitle">Ajouter un variant à un produit existant</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Erreur -->
+    <div *ngIf="errorMessage" class="alert alert-danger m-3">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form class="form-produit">
+
+        <!-- Section Produit (Autocomplétion) -->
+        <div class="form-section">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-search"></i>
+              Produit <span class="required">*</span>
+            </label>
+            <div class="input-wrapper autocomplete-wrapper">
+              <input
+                type="text"
+                [(ngModel)]="rechercheProduit"
+                [ngModelOptions]="{standalone: true}"
+                (input)="onRechercheProduit()"
+                (focus)="onFocusInput()"
+                class="form-input"
+                placeholder="Rechercher un produit par nom ou code..."
+                autocomplete="off">
+              <div class="input-line"></div>
+              <i class="fas fa-search input-icon"></i>
+
+              <!-- Liste autocomplétion -->
+              <div class="autocomplete-dropdown" *ngIf="showAutocomplete && produitsFiltres.length > 0">
+                <div
+                  class="autocomplete-item"
+                  *ngFor="let p of produitsFiltres"
+                  (click)="selectionnerProduit(p)">
+                  <div class="product-thumb" *ngIf="p.image">
+                    <img [src]="p.image" [alt]="p.name">
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">{{ p.name }}</span>
+                    <span class="product-code">{{ p.code }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Produit sélectionné -->
+            <div class="selected-product" *ngIf="produitSelectionne">
+              <i class="fas fa-check-circle"></i>
+              <span>{{ produitSelectionne.name }} ({{ produitSelectionne.code }})</span>
+              <button type="button" class="btn-clear-selection" (click)="clearSelection()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Informations Variant -->
+        <div class="form-section">
+          <div class="form-row">
+            <div class="form-group half">
+              <label class="form-label">
+                <i class="fas fa-barcode"></i>
+                Code Variant <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  [(ngModel)]="variant.code"
+                  [ngModelOptions]="{standalone: true}"
+                  class="form-input"
+                  placeholder="Ex: VAR-001...">
+                <div class="input-line"></div>
+                <i class="fas fa-hashtag input-icon"></i>
+              </div>
+            </div>
+
+            <div class="form-group half">
+              <label class="form-label">
+                <i class="fas fa-star"></i>
+                Variant Principal
+              </label>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="variant.isMain" [ngModelOptions]="{standalone: true}">
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">{{ variant.isMain ? 'Oui' : 'Non' }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label class="form-label">
+                <i class="fas fa-euro-sign"></i>
+                Prix <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  [(ngModel)]="variant.price"
+                  [ngModelOptions]="{standalone: true}"
+                  class="form-input"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01">
+                <div class="input-line"></div>
+                <i class="fas fa-euro-sign input-icon"></i>
+              </div>
+            </div>
+
+            <div class="form-group half">
+              <label class="form-label">
+                <i class="fas fa-boxes"></i>
+                Stock <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  [(ngModel)]="variant.stock"
+                  [ngModelOptions]="{standalone: true}"
+                  class="form-input"
+                  placeholder="0"
+                  min="0">
+                <div class="input-line"></div>
+                <i class="fas fa-cubes input-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Spécifications -->
+        <div class="form-section specifications-section">
+          <div class="section-header">
+            <label class="section-title">
+              <i class="fas fa-list-ul"></i>
+              Attributs Spécifiques
+            </label>
+          </div>
+
+          <div class="table-container">
+            <table class="specifications-table">
+              <thead>
+              <tr>
+                <th>Attribut</th>
+                <th>Valeur</th>
+                <th></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let spec of specifications" class="spec-row">
+                <td>
+                  <input *ngIf="spec.isEditing; else nameRead"
+                         type="text" [(ngModel)]="spec.name" [ngModelOptions]="{standalone: true}"
+                         class="table-input" placeholder="Ex: couleur">
+                  <ng-template #nameRead>
+                    <span class="spec-display" (click)="spec.isEditing = true">{{ spec.name }}</span>
+                  </ng-template>
+                </td>
+                <td>
+                  <input *ngIf="spec.isEditing; else valueRead"
+                         type="text" [(ngModel)]="spec.value" [ngModelOptions]="{standalone: true}"
+                         class="table-input" placeholder='Ex: rouge ou ["S", "M", "L"]'>
+                  <ng-template #valueRead>
+                    <span class="spec-display" (click)="spec.isEditing = true">{{ spec.value }}</span>
+                  </ng-template>
+                </td>
+                <td>
+                  <button type="button" class="btn-delete-row" (click)="removeSpecification(spec.id)">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+
+            <button type="button" class="btn-add-spec" (click)="addSpecification()">
+              <i class="fas fa-plus"></i> Ajouter un attribut
+            </button>
+          </div>
+        </div>
+
+        <!-- Section Upload Images -->
+        <div class="form-section">
+          <div class="section-header">
+            <label class="section-title">
+              <i class="fas fa-images"></i>
+              Images du Variant
+            </label>
+          </div>
+
+          <div class="upload-container">
+            <div class="upload-zone" (click)="fileInput.click()">
+              <input #fileInput type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden>
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Cliquez ou glissez des images ici</p>
+              <span>PNG, JPG jusqu'à 5MB</span>
+            </div>
+
+            <div class="image-previews" *ngIf="imagePreviews.length > 0">
+              <div class="preview-item" *ngFor="let preview of imagePreviews; let i = index">
+                <img [src]="preview" alt="Preview">
+                <button type="button" class="btn-remove-image" (click)="removeImage(i)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-info">
+        <span class="required-hint"><span class="dot"></span> Champs obligatoires</span>
+      </div>
+      <div class="footer-actions">
+        <button type="button" class="btn btn-secondary" (click)="onClose()">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+        <button type="button" class="btn btn-primary"
+                (click)="onSave()"
+                [disabled]="!isFormValid() || isSubmitting">
+          <i class="fas" [class.fa-check]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
+          {{ isSubmitting ? 'Création...' : 'Créer le Variant' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

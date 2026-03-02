@@ -1,0 +1,362 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Mes Produits & Variants</h1>
+      <nav class="breadcrumbs">
+        <a>Boutique</a>
+        <span class="separator">></span>
+        <span class="current">Gestion des Variants</span>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openAddVariantModal()" [disabled]="isLoading">
+        <i class="fas fa-plus"></i>
+        Ajouter un Variant
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid" *ngIf="!isLoading">
+    <div class="stat-card" *ngFor="let stat of statsCards" [class]="'stat-card--' + stat.couleur">
+      <div class="stat-icon">
+        <i class="fas" [class]="stat.icone"></i>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{ stat.valeur }}</h3>
+        <p class="stat-label">{{ stat.titre }}</p>
+        <span class="stat-sous-titre" *ngIf="stat.sousTitre">{{ stat.sousTitre }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres Avancés -->
+  <div class="filters-card">
+    <div class="filters-header" (click)="showFilters = !showFilters">
+      <h3><i class="fas fa-filter"></i> Filtres Avancés</h3>
+      <i class="fas" [class.fa-chevron-down]="!showFilters" [class.fa-chevron-up]="showFilters"></i>
+    </div>
+
+    <div class="filters-body" *ngIf="showFilters">
+      <!-- Recherche -->
+      <div class="filter-section">
+        <label>Recherche</label>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Nom, code, description..."
+                 [(ngModel)]="filtres.recherche"
+                 (input)="appliquerFiltres()">
+        </div>
+      </div>
+
+      <!-- Catégories -->
+      <div class="filter-section">
+        <label>Catégories</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item" *ngFor="let cat of categories">
+            <input type="checkbox"
+                   [checked]="filtres.categories.includes(cat._id)"
+                   (change)="toggleFiltreCategorie(cat._id)">
+            <span>{{ cat.name }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Prix -->
+      <div class="filter-section">
+        <label>Fourchette de Prix</label>
+        <div class="range-inputs">
+          <input type="number" placeholder="Min" [(ngModel)]="filtres.prixMin" (change)="appliquerFiltres()">
+          <span>à</span>
+          <input type="number" placeholder="Max" [(ngModel)]="filtres.prixMax" (change)="appliquerFiltres()">
+        </div>
+      </div>
+
+      <!-- Stock -->
+      <div class="filter-section">
+        <label>Fourchette de Stock</label>
+        <div class="range-inputs">
+          <input type="number" placeholder="Min" [(ngModel)]="filtres.stockMin" (change)="appliquerFiltres()">
+          <span>à</span>
+          <input type="number" placeholder="Max" [(ngModel)]="filtres.stockMax" (change)="appliquerFiltres()">
+        </div>
+      </div>
+
+      <!-- Statuts -->
+      <div class="filter-section">
+        <label>Statuts</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox"
+                   [checked]="filtres.statuts.includes('en_stock')"
+                   (change)="toggleFiltreStatut('en_stock')">
+            <span class="status-dot green"></span> En Stock
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox"
+                   [checked]="filtres.statuts.includes('stock_faible')"
+                   (change)="toggleFiltreStatut('stock_faible')">
+            <span class="status-dot yellow"></span> Stock Faible
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox"
+                   [checked]="filtres.statuts.includes('rupture')"
+                   (change)="toggleFiltreStatut('rupture')">
+            <span class="status-dot red"></span> Rupture
+          </label>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="filter-section">
+        <label>Période de sortie</label>
+        <div class="date-inputs">
+          <input type="date" [(ngModel)]="filtres.dateDebut" (change)="appliquerFiltres()">
+          <span>au</span>
+          <input type="date" [(ngModel)]="filtres.dateFin" (change)="appliquerFiltres()">
+        </div>
+      </div>
+
+      <!-- Promotion -->
+      <div class="filter-section">
+        <label>Promotion</label>
+        <select [(ngModel)]="filtres.enPromotion" (change)="appliquerFiltres()">
+          <option [ngValue]="null">Tous</option>
+          <option [ngValue]="true">En promotion</option>
+          <option [ngValue]="false">Sans promotion</option>
+        </select>
+      </div>
+
+      <!-- Attributs spécifiques -->
+      <div class="filter-section">
+        <label>Attributs Spécifiques</label>
+        <div class="attributs-filters">
+          <div class="attribut-row" *ngFor="let attr of filtres.attributs; let i = index">
+            <input type="text" placeholder="Clé (ex: couleur)" [(ngModel)]="attr.cle" (change)="appliquerFiltres()">
+            <input type="text" placeholder="Valeur" [(ngModel)]="attr.valeur" (change)="appliquerFiltres()">
+            <button class="btn-icon" (click)="supprimerFiltreAttribut(i)"><i class="fas fa-times"></i></button>
+          </div>
+          <button class="btn-add-attr" (click)="ajouterFiltreAttribut()">
+            <i class="fas fa-plus"></i> Ajouter un attribut
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="filters-actions">
+        <button class="btn btn-secondary" (click)="reinitialiserFiltres()">
+          <i class="fas fa-undo"></i> Réinitialiser
+        </button>
+        <button class="btn btn-success" (click)="exporterResultats()">
+          <i class="fas fa-download"></i> Exporter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="content-card">
+    <div class="table-container" *ngIf="!isLoading">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th class="col-expand"></th>
+          <th class="col-sortable" (click)="changerTri('name')">
+            Produit <i class="fas" [class]="getSortIcon('name')"></i>
+          </th>
+          <th class="col-sortable" (click)="changerTri('code')">
+            Code <i class="fas" [class]="getSortIcon('code')"></i>
+          </th>
+          <th class="col-sortable" (click)="changerTri('category')">
+            Catégorie <i class="fas" [class]="getSortIcon('category')"></i>
+          </th>
+          <th class="col-sortable" (click)="changerTri('stock')">
+            Stock Total <i class="fas" [class]="getSortIcon('stock')"></i>
+          </th>
+          <th>Variants</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let produit of produitsPagines">
+          <!-- Ligne Produit -->
+          <tr class="product-row" [class.expanded]="isProductExpanded(produit._id)">
+            <td class="col-expand">
+              <button class="btn-toggle" (click)="toggleProduct(produit._id)">
+                <i class="fas" [class.fa-chevron-right]="!isProductExpanded(produit._id)"
+                   [class.fa-chevron-down]="isProductExpanded(produit._id)"></i>
+              </button>
+            </td>
+            <td>
+              <div class="product-info">
+                <div class="product-avatar">
+                  <img *ngIf="produit.product.image" [src]="produit.product.image" [alt]="produit.product.name">
+                  <i *ngIf="!produit.product.image" class="fas fa-box"></i>
+                </div>
+                <div class="product-details">
+                  <span class="product-name">{{ produit.product.name }}</span>
+                  <small>{{ produit.product.releaseDate | date:'dd/MM/yyyy' }}</small>
+                </div>
+              </div>
+            </td>
+            <td><span class="code-badge">{{ produit.product.code }}</span></td>
+            <td><span class="category-badge">{{ produit.category.name }}</span></td>
+            <td>
+                <span class="stock-total" [class.faible]="getTotalStockUser(produit) <= 10">
+                  {{ getTotalStockUser(produit) }}
+                </span>
+            </td>
+            <td>
+              <span class="variant-count">{{ getUserVariants(produit).length }} variant(s)</span>
+            </td>
+            <td>
+              <button class="btn-action btn-add" (click)="openAddVariantModal()" title="Ajouter un variant">
+                <i class="fas fa-plus"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Lignes Variants -->
+          <tr class="variant-row" *ngIf="isProductExpanded(produit._id)">
+            <td colspan="7">
+              <div class="variants-container">
+                <table class="variants-table">
+                  <thead>
+                  <tr>
+                    <th></th>
+                    <th>Code Variant</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Attributs</th>
+                    <th>Promotions</th>
+                    <th>Actions</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <ng-container *ngFor="let variant of getUserVariants(produit)">
+                    <tr [class.has-promotion]="hasActivePromotion(variant)">
+                      <td>
+                        <button class="btn-toggle-small" (click)="toggleVariant(variant._id!)">
+                          <i class="fas" [class.fa-chevron-right]="!isVariantExpanded(variant._id!)"
+                             [class.fa-chevron-down]="isVariantExpanded(variant._id!)"></i>
+                        </button>
+                      </td>
+                      <td>
+                        <span class="variant-code">{{ variant.code }}</span>
+                        <span class="main-badge" *ngIf="variant.isMain">Principal</span>
+                      </td>
+                      <td>
+                        <div class="prix-container">
+                            <span class="prix-original" *ngIf="hasActivePromotion(variant)">
+                              {{ variant.price | currency:'EUR' }}
+                            </span>
+                          <span class="prix-effectif" [class.promo]="hasActivePromotion(variant)">
+                              {{ getPrixEffectif(variant) | currency:'EUR' }}
+                            </span>
+                        </div>
+                      </td>
+                      <td>
+                          <span class="stock-badge" [class]="getStatutFromStock(variant.stock)">
+                            {{ variant.stock }}
+                          </span>
+                      </td>
+                      <td>
+                        <div class="attributs-list">
+                            <span class="attr-tag" *ngFor="let attr of variant.specificAttributes | keyvalue">
+                              {{ attr.key }}: {{ attr.value }}
+                            </span>
+                        </div>
+                      </td>
+                      <td>
+                          <span class="promo-badge" *ngIf="hasActivePromotion(variant)">
+                            <i class="fas fa-tag"></i>
+                            {{ getActivePromotion(variant)?.value }}
+                            {{ getActivePromotion(variant)?.typePromotion === 'PERCENTAGE' ? '%' : '€' }}
+                          </span>
+                        <span class="no-promo" *ngIf="!hasActivePromotion(variant)">-</span>
+                      </td>
+                      <td>
+                        <div class="action-buttons">
+                          <button class="btn-action btn-edit" (click)="openUpdateVariantModal(variant, produit)" title="Modifier">
+                            <i class="fas fa-pen"></i>
+                          </button>
+                          <button class="btn-action btn-promo" (click)="openAddPromotionModal(variant)" title="Ajouter promotion">
+                            <i class="fas fa-percent"></i>
+                          </button>
+                          <button class="btn-action btn-delete" (click)="supprimerVariant(variant._id!)" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Promotions détaillées -->
+                    <tr class="promotions-row" *ngIf="isVariantExpanded(variant._id!)">
+                      <td colspan="7">
+                        <div class="promotions-detail">
+                          <h4><i class="fas fa-tags"></i> Promotions</h4>
+                          <div class="promotions-list" *ngIf="variant.promotions && variant.promotions.length > 0; else noPromo">
+                            <div class="promo-item" *ngFor="let promo of variant.promotions"
+                                 [class.active]="isPromotionActive(promo)">
+                              <div class="promo-info">
+                                  <span class="promo-value">
+                                    {{ promo.typePromotion === 'PERCENTAGE' ? '-' + promo.value + '%' : '-' + promo.value + '€' }}
+                                  </span>
+                                <span class="promo-dates">
+                                    {{ promo.dateBegin | date:'dd/MM/yyyy' }} - {{ promo.dateEnd | date:'dd/MM/yyyy' }}
+                                  </span>
+                              </div>
+                              <span class="promo-status" [class.active]="isPromotionActive(promo)">
+                                  {{ isPromotionActive(promo) ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
+                          </div>
+                          <ng-template #noPromo>
+                            <p class="no-promo-msg">Aucune promotion pour ce variant</p>
+                          </ng-template>
+                          <button class="btn-add-promo" (click)="openAddPromotionModal(variant)">
+                            <i class="fas fa-plus"></i> Ajouter une promotion
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" *ngIf="!isLoading && totalPages > 1">
+      <div class="pagination-controls">
+        <button class="btn-page" [disabled]="pageActuelle === 1" (click)="changerPage(1)">
+          <i class="fas fa-angle-double-left"></i>
+        </button>
+        <button class="btn-page" [disabled]="pageActuelle === 1" (click)="changerPage(pageActuelle - 1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <ng-container *ngFor="let page of getPagesVisibles()">
+          <button *ngIf="page !== -1" class="btn-page" [class.active]="pageActuelle === page" (click)="changerPage(page)">
+            {{ page }}
+          </button>
+          <span *ngIf="page === -1" class="page-ellipsis">...</span>
+        </ng-container>
+
+        <button class="btn-page" [disabled]="pageActuelle === totalPages" (click)="changerPage(pageActuelle + 1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <button class="btn-page" [disabled]="pageActuelle === totalPages" (click)="changerPage(totalPages)">
+          <i class="fas fa-angle-double-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

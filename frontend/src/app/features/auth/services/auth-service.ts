@@ -45,7 +45,6 @@ export class AuthService {
   }
 
 
-
   resetPassword(email: string,password:string, code: string): Observable<AuthResponse> {
     const body = { email,password, code };
 

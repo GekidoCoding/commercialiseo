@@ -22,6 +22,12 @@ export class PublicService {
       .pipe(catchError(this.handleError));
   }
 
+  findAllProductsReal(): Observable<ApiResponse<Product[]>> {
+    return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/products`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+
   /**
    * Creer un category
    */

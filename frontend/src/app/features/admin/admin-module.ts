@@ -9,7 +9,6 @@ import {CategorieFormComponent} from './components/categorie/categorie-form/cate
 import {ProduitsListComponent} from './pages/produits-list/produits-list.component';
 import {ProduitsAddFormComponent} from './components/produit/produits-add-form/produits-add-form.component';
 
-
 @NgModule({
   declarations: [
     TestAdmin,

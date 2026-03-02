@@ -34,8 +34,10 @@ export class AuthUtilService {
    * Stocke l'utilisateur connecté dans le storage (localStorage ou sessionStorage)
    */
   storeUser(user: User, remember: boolean = false): void {
+    console.log( user);
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem('userData', JSON.stringify({
+      id: user.id,
       username: user.username,
       email: user.email,
       role: user.role
@@ -56,6 +58,7 @@ export class AuthUtilService {
     try {
       const parsed = JSON.parse(userData);
       const user = new User();
+      user.id = parsed.id || '';
       user.username = parsed.username || '';
       user.email = parsed.email || '';
       user.setRole(parsed.role || 'acheteur');
