@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { PublicService } from '../../../../shared/services/public.service';
 import { Product } from '../../../../shared/model/product';
@@ -6,6 +6,7 @@ import { Variant } from '../../../../shared/model/Variant';
 import { finalize } from 'rxjs/operators';
 import {AuthUtilService} from '../../../../shared/services/auth-util.service';
 import {BoutiqueService} from '../../services/boutique.service';
+
 
 interface Specification {
   id: number;
@@ -54,9 +55,9 @@ export class VariantAddFormComponent implements OnInit {
     public activeModal: NgbActiveModal,
     private boutiqueService: BoutiqueService,
     private publicService: PublicService,
-    private authService: AuthUtilService
+    private authService: AuthUtilService,
+    private elementRef: ElementRef
   ) {}
-
   ngOnInit(): void {
     this.chargerProduits();
   }
@@ -68,7 +69,9 @@ export class VariantAddFormComponent implements OnInit {
       .subscribe({
         next: (response) => {
           if (response.success) {
+            console.log(response);
             this.produits = response.data || [];
+            console.log(response.data);
           }
         },
         error: (error) => {
@@ -80,13 +83,21 @@ export class VariantAddFormComponent implements OnInit {
   // ==================== AUTOCOMPLÉTION ====================
 
   onRechercheProduit(): void {
-    if (!this.rechercheProduit.trim()) {
+    const terme = this.rechercheProduit.trim().toLowerCase();
+
+    // Si le champ est vide ou ne correspond plus au produit sélectionné
+    if (!terme) {
       this.produitsFiltres = [];
       this.showAutocomplete = false;
+      this.produitSelectionne = null; // Réinitialise la sélection
       return;
     }
 
-    const terme = this.rechercheProduit.toLowerCase();
+    // Si on modifie le texte alors qu'un produit était sélectionné
+    if (this.produitSelectionne && this.rechercheProduit !== this.produitSelectionne.name) {
+      this.produitSelectionne = null;
+    }
+
     this.produitsFiltres = this.produits.filter(p =>
       p.name?.toLowerCase().includes(terme) ||
       p.code?.toLowerCase().includes(terme)
@@ -223,6 +234,33 @@ export class VariantAddFormComponent implements OnInit {
           this.errorMessage = error.message || 'Une erreur est survenue';
         }
       });
+  }
+
+  // Gestion du focus sur l'input
+  onFocusInput(): void {
+    if (this.rechercheProduit.trim() && this.produitsFiltres.length > 0) {
+      this.showAutocomplete = true;
+    } else if (this.rechercheProduit.trim()) {
+      this.onRechercheProduit();
+    }
+  }
+
+// Effacer la sélection
+  clearSelection(): void {
+    this.produitSelectionne = null;
+    this.rechercheProduit = '';
+    this.produitsFiltres = [];
+    this.showAutocomplete = false;
+  }
+// Dans la classe, ajoutez HostListener pour fermer au clic extérieur
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    const autocompleteWrapper = this.elementRef.nativeElement.querySelector('.autocomplete-wrapper');
+
+    if (autocompleteWrapper && !autocompleteWrapper.contains(target)) {
+      this.showAutocomplete = false;
+    }
   }
 
   onClose(): void {

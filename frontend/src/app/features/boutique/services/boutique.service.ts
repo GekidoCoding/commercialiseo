@@ -15,25 +15,16 @@ export class BoutiqueService {
 
   constructor(private http: HttpClient) {}
 
-  createVariant(variant: Variant): Observable<ApiResponse<Variant>> {
-    return this.http.post<ApiResponse<Variant>>(`${this.apiUrl}/create-variant`, variant)
-      .pipe(catchError(this.handleError));
-  }
-
-  updateVariant(variant: Variant): Observable<ApiResponse<Variant>> {
-    return this.http.put<ApiResponse<Variant>>(`${this.apiUrl}/update-variant`, variant)
-      .pipe(catchError(this.handleError));
-  }
 
   // Ajouter ces méthodes dans boutique.service.ts
 
   createVariantWithFiles(formData: FormData): Observable<ApiResponse<Variant>> {
-    return this.http.post<ApiResponse<Variant>>(`${this.apiUrl}/create-variant-with-files`, formData)
+    return this.http.post<ApiResponse<Variant>>(`${this.apiUrl}/create-variant`, formData)
       .pipe(catchError(this.handleError));
   }
 
   updateVariantWithFiles(formData: FormData): Observable<ApiResponse<Variant>> {
-    return this.http.put<ApiResponse<Variant>>(`${this.apiUrl}/update-variant-with-files`, formData)
+    return this.http.put<ApiResponse<Variant>>(`${this.apiUrl}/update-variant`, formData)
       .pipe(catchError(this.handleError));
   }
 

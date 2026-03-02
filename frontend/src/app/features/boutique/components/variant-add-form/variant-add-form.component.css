@@ -1010,3 +1010,167 @@
   background: var(--gray-300);
   border-radius: 3px;
 }
+
+/* ============================================
+   AUTOCOMPLETION PRODUIT
+============================================ */
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 2px solid var(--green-primary);
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: dropdownSlide 0.2s ease;
+  margin-top: 2px;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover {
+  background: var(--green-bg);
+}
+
+.product-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.product-name {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-code {
+  font-size: 0.8125rem;
+  color: var(--gray-500);
+  font-family: monospace;
+}
+
+/* Produit sélectionné */
+.selected-product {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--green-bg);
+  border: 1px solid var(--green-lighter);
+  border-radius: 6px;
+  color: var(--green-dark);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.selected-product i.fa-check-circle {
+  color: var(--green-primary);
+  font-size: 1.125rem;
+}
+
+.btn-clear-selection {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--red-500);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  font-size: 0.75rem;
+}
+
+.btn-clear-selection:hover {
+  background: var(--red-500);
+  color: var(--white);
+}
+
+/* État de chargement */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  color: var(--gray-500);
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Scrollbar personnalisée pour l'autocomplétion */
+.autocomplete-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-track {
+  background: var(--gray-100);
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}

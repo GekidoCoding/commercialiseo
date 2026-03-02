@@ -19,19 +19,14 @@ const boutiqueController={
     createVariant:[
         asyncHandler(async (req, res) => {
             // Parser les données JSON depuis le champ 'variantData' (FormData)
-            let variantData;
-            try {
-                variantData = req.body.variantData ? JSON.parse(req.body.variantData) : req.body;
-            } catch (e) {
-                variantData = req.body;
-            }
-
+            let variantData= req.body;
+            console.log("1. variant data 1 :"+ JSON.stringify(variantData) );
             // Récupérer les fichiers uploadés
             const files = req.files || [];
 
             const result = await VariantService.createVariant(variantData, files);
             if (!result.success) {
-                return errorResponse(res, result.error, result.code || 500);
+                return errorResponse(res, result.error,  500);
             }
             return res.status(200).json(result, 'Variant créé avec succès');
         }),

@@ -40,7 +40,7 @@
                 [(ngModel)]="rechercheProduit"
                 [ngModelOptions]="{standalone: true}"
                 (input)="onRechercheProduit()"
-                (focus)="showAutocomplete = produitsFiltres.length > 0"
+                (focus)="onFocusInput()"
                 class="form-input"
                 placeholder="Rechercher un produit par nom ou code..."
                 autocomplete="off">
@@ -48,7 +48,7 @@
               <i class="fas fa-search input-icon"></i>
 
               <!-- Liste autocomplétion -->
-              <div class="autocomplete-dropdown" *ngIf="showAutocomplete">
+              <div class="autocomplete-dropdown" *ngIf="showAutocomplete && produitsFiltres.length > 0">
                 <div
                   class="autocomplete-item"
                   *ngFor="let p of produitsFiltres"
@@ -68,6 +68,9 @@
             <div class="selected-product" *ngIf="produitSelectionne">
               <i class="fas fa-check-circle"></i>
               <span>{{ produitSelectionne.name }} ({{ produitSelectionne.code }})</span>
+              <button type="button" class="btn-clear-selection" (click)="clearSelection()">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ class VariantService {
 
         // Créer les nouvelles URLs d'images
         const newImages = files.map((file, index) => ({
-            url: `/photos/${file.filename}`,
+            url: `/images/${file.filename}`,
             isMain: false
         }));
 
@@ -58,16 +58,29 @@ class VariantService {
         try {
             // Traiter les fichiers uploadés
             const images = this.processImages(files, [], true);
-            
+
+            console.log("2. le variant data 2 sauvegarder:"+ JSON.stringify(variantData.variant));
+
+            let variantDataTri= JSON.parse(variantData.variant) ;
+
             // Créer le variant avec les images
             const variantDataWithImages = {
-                ...variantData,
-                images: images
+                productId: variantDataTri.productId,
+                code:variantDataTri.code,
+                price:variantDataTri.price,
+                stock:variantDataTri.stock,
+                userId: variantDataTri.userId,
+                specificAttributes: variantDataTri.specificAttributes,
+                images:images,
+                lastUpdated: Date.now()
             };
-
+            console.log("3.variant : "+JSON.stringify(variantDataWithImages) );
             const variant = new Variant(variantDataWithImages);
-            await variant.save();
-            return { success: true, data: variant };
+            console.log("4.variant : "+variant);
+
+            const variantCreated = await variant.save();
+            return { success: true, data: variantCreated };
+
         } catch (error) {
             return {
                 success: false,

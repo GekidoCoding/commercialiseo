@@ -74,7 +74,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Servir les fichiers statiques (photos)
-app.use('/photos', express.static(path.join(__dirname, '../photos')));
+app.use('/images', express.static(path.join(__dirname, '../images')));
 
 // API routes
 app.use('/api', routes);

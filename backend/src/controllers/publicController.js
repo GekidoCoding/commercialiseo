@@ -33,12 +33,11 @@ const publicController={
         }),
     ],
 
-
     findAllProductsReal: [
         asyncHandler(async (req, res) => {
             const result = await productService.findAllReal();
-            return createdResponse(res, result, 'Liste des categories succes');
+            return createdResponse(res, result, 'Liste des produits succes');
         }),
-    ],
+    ]
 }
 module.exports = publicController;

@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 
 // S'assurer que le dossier photos existe
-const uploadDir = path.join(__dirname, '../../photos');
+const uploadDir = path.join(__dirname, '../../images');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -46,7 +46,7 @@ const upload = multer({
 });
 
 // Middleware pour upload multiple de photos
-const uploadPhotos = upload.array('photos', 10);
+const uploadPhotos = upload.array('images', 10);
 
 // Wrapper pour gérer les erreurs multer
 const handleUpload = (req, res, next) => {

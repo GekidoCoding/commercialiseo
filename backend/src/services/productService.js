@@ -46,7 +46,7 @@ class ProductService{
     async findAllReal() {
         try {
             const products = await Product.find().lean();
-            return { success: true, data: products };
+            return  products ;
         } catch (error) {
             return {
                 success: false,
