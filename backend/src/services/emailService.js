@@ -18,27 +18,18 @@ class EmailService {
    * Initialise le transporteur nodemailer
    */
   initializeTransporter() {
+    console.log('Initialize transporter');
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.warn('⚠️ Configuration email manquante. Les emails ne seront pas envoyés.');
       return;
     }
-
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+    console.log('Creating transporter');
+    this.transporter  = nodemailer.createTransport({
+      service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        pass: process.env.EMAIL_PASS, // App Password
       },
-      // Forcer IPv4 pour éviter les problèmes de connectivité
-      family: 4,
-      // Configuration pour éviter les problèmes de connexion
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      rateDelta: 1000,
-      rateLimit: 5,
     });
 
     // Vérifier la connexion au démarrage
