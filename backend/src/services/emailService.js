@@ -24,11 +24,15 @@ class EmailService {
     }
 
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      // Forcer IPv4 pour éviter les problèmes de connectivité
+      family: 4,
       // Configuration pour éviter les problèmes de connexion
       pool: true,
       maxConnections: 5,

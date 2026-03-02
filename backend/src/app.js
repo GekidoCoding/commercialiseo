@@ -16,6 +16,9 @@ const { sanitize } = require('./middleware/validationMiddleware');
 
 const app = express();
 
+// Faire confiance au proxy (nécessaire pour Render et autres PaaS)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
