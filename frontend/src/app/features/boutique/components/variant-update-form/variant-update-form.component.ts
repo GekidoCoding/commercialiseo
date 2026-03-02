@@ -5,6 +5,7 @@ import { ProductRead } from '../../../../shared/model/product-read';
 import { VariantRead } from '../../../../shared/model/variant-read';
 import { finalize } from 'rxjs/operators';
 import {BoutiqueService} from '../../services/boutique.service';
+import {ToastService} from '../../../../shared/services/toast.service';
 
 interface Specification {
   id: number;
@@ -49,6 +50,7 @@ export class VariantUpdateFormComponent implements OnInit {
   constructor(
     public activeModal: NgbActiveModal,
     private boutiqueService: BoutiqueService,
+    private toastr:ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -167,12 +169,13 @@ export class VariantUpdateFormComponent implements OnInit {
     this.selectedFiles.forEach((file) => {
       formData.append(`images`, file, file.name);
     });
-
+    console.log("data before update variant:"+ JSON.stringify(formData, null, 2));
     this.boutiqueService.updateVariantWithFiles(formData)
       .pipe(finalize(() => this.isSubmitting = false))
       .subscribe({
         next: (response) => {
           if (response.success) {
+            this.toastr.success('Variant mis à jour avec succès');
             this.activeModal.close('saved');
           } else {
             this.errorMessage = response.message || 'Erreur lors de la mise à jour';

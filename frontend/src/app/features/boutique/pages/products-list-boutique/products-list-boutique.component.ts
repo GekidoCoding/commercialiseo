@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BoutiqueService } from '../../services/boutique.service';
 import { PublicService } from '../../../../shared/services/public.service';
@@ -6,7 +6,8 @@ import { ProductRead } from '../../../../shared/model/product-read';
 import { VariantRead } from '../../../../shared/model/variant-read';
 import { PromotionRead } from '../../../../shared/model/promotion-read';
 import { Category } from '../../../../shared/model/category';
-import { finalize } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import {AuthUtilService} from '../../../../shared/services/auth-util.service';
 import {VariantAddFormComponent} from '../../components/variant-add-form/variant-add-form.component';
 import {VariantUpdateFormComponent} from '../../components/variant-update-form/variant-update-form.component';
@@ -39,12 +40,15 @@ interface FiltresAvances {
   styleUrls: ['./products-list-boutique.component.css'],
   standalone: false
 })
-export class ProductsListBoutiqueComponent implements OnInit {
+export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
   // Données
   produits: ProductRead[] = [];
   produitsFiltres: ProductRead[] = [];
   categories: Category[] = [];
   currentUserId: string = '';
+
+  // Gestion destruction du composant
+  private destroy$ = new Subject<void>();
 
   // Loading
   isLoading: boolean = false;
@@ -108,6 +112,11 @@ export class ProductsListBoutiqueComponent implements OnInit {
     this.chargerProduits();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   // ==================== CHARGEMENT DES DONNÉES ====================
 
   chargerCategories(): void {
@@ -122,15 +131,17 @@ export class ProductsListBoutiqueComponent implements OnInit {
 
   chargerProduits(): void {
     this.isLoading = true;
-
+    console.log("userId in charging products boutique :" + this.currentUserId);
     this.boutiqueService.findAllProductsForUser(this.currentUserId)
-      .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
+            console.log("products in boutique :" + JSON.stringify(response));
             this.produits = response.data;
+            this.isLoading = false;
             this.appliquerFiltres();
             this.calculerStatistiques();
+            this.isLoading = false;
           }
         },
         error: (error) => {

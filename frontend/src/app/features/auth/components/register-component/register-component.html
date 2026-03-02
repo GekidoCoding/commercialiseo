@@ -79,7 +79,7 @@
           <select class="form-control" [(ngModel)]="role" name="role">
             <option value="">-- Sélectionner un rôle --</option>
 
-            <option *ngFor="let r of user.roles" [value]="r">
+            <option *ngFor="let r of availableRoles" [value]="r">
               {{ getRoleLabel(r) }}
             </option>
           </select>

@@ -34,12 +34,6 @@ class VariantService {
         return allImages;
     }
 
-    /**
-     * Définit une image spécifique comme principale
-     * @param {Array} images - Tableau d'images
-     * @param {number} mainIndex - Index de l'image à définir comme principale
-     * @returns {Array} - Tableau d'images mis à jour
-     */
     setMainImage(images, mainIndex = 0) {
         if (!images || images.length === 0) {
             return images;
@@ -79,6 +73,7 @@ class VariantService {
             console.log("4.variant : "+variant);
 
             const variantCreated = await variant.save();
+            console.log("variant created : "+ variantCreated);
             return { success: true, data: variantCreated };
 
         } catch (error) {
@@ -92,10 +87,11 @@ class VariantService {
 
     async updateVariant(variantData, files = []) {
         try {
-            const { id, mainImageIndex, ...otherData } = variantData;
-            
+            console.log("2. le variant id data 2 update :"+JSON.stringify(variantData) );
+            const { _id, mainImageIndex, ...otherData } = variantData;
+            console.log("3. le variant id data 2 update :"+ JSON.stringify(_id));
             // Récupérer le variant existant
-            const existingVariant = await Variant.findById(id);
+            const existingVariant = await Variant.findById(_id);
             if (!existingVariant) {
                 return {
                     success: false,
@@ -124,7 +120,7 @@ class VariantService {
 
             // Mettre à jour le variant
             const updatedVariant = await Variant.findByIdAndUpdate(
-                id,
+                _id,
                 {
                     ...otherData,
                     images: updatedImages,
@@ -132,7 +128,7 @@ class VariantService {
                 },
                 { new: true }
             );
-
+            console.log("4.updated variant after find and update :"+ JSON.stringify( updatedVariant) );
             return { success: true, data: updatedVariant };
         } catch (error) {
             return {
@@ -144,8 +140,11 @@ class VariantService {
     }
      async deleteVariant(id) {
         try {
+            const existingVariant = await Variant.findById(id);
+            const productId = existingVariant.productId;
+
             await Variant.deleteOne({ _id: id });
-            return { success: true, data: { message: 'Variant deleted successfully' } };
+            return { success: true, data: { productId: productId } };
         } catch (error) {
             return {
                 success: false,

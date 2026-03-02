@@ -53,7 +53,7 @@
                 <span class="cart-img">{{ item.img }}</span>
                 <div class="cart-info">
                   <span class="cart-name">{{ item.name }}</span>
-                  <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} €</span>
+                  <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} </span>
                 </div>
                 <button class="cart-remove" (click)="removeFromCart(item.id)" aria-label="Supprimer">
                   <i class="fas fa-times"></i>
@@ -65,7 +65,7 @@
           <div class="panel-footer" *ngIf="cartItems.length > 0">
             <div class="cart-total">
               <span>Total</span>
-              <strong>{{ cartTotal | number:'1.2-2' }} €</strong>
+              <strong>{{ cartTotal | number:'1.2-2' }} </strong>
             </div>
             <button class="btn-checkout" routerLink="/panier" (click)="cartOpen.set(false)">
               <i class="fas fa-lock"></i> Passer commande
@@ -219,7 +219,7 @@
             <span class="cart-img">{{ item.img }}</span>
             <div class="cart-info">
               <span class="cart-name">{{ item.name }}</span>
-              <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} €</span>
+              <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} </span>
             </div>
             <button class="cart-remove" (click)="removeFromCart(item.id)" aria-label="Supprimer">
               <i class="fas fa-times"></i>
@@ -230,7 +230,7 @@
       <div class="panel-footer" *ngIf="cartItems.length > 0">
         <div class="cart-total">
           <span>Total</span>
-          <strong>{{ cartTotal | number:'1.2-2' }} €</strong>
+          <strong>{{ cartTotal | number:'1.2-2' }} </strong>
         </div>
         <button class="btn-checkout" routerLink="/panier" (click)="cartOpen.set(false)">
           <i class="fas fa-lock"></i> Passer commande
