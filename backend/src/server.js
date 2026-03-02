@@ -33,6 +33,9 @@ const startServer = async () => {
     const server = app.listen(PORT, HOST, () => {
       console.log(`🚀 Serveur démarré sur http://${HOST}:${PORT}`);
       console.log(`📁 Environnement: ${process.env.NODE_ENV || 'development'}`);
+
+      console.log(`email.env success: ${process.env.EMAIL_USER}`);
+      
     });
 
     // Gestion gracieuse de l'arrêt
