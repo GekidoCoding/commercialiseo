@@ -35,6 +35,7 @@ const authenticate = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded);
     req.user = decoded;
     next();
   } catch (error) {
@@ -70,7 +71,7 @@ const authorize = (...allowedRoles) => {
     }
 
     const { role } = req.user;
-
+    console.log("role:"+ role);
     if (!allowedRoles.includes(role)) {
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,

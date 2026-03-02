@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {TestBoutique} from './pages/test-boutique/test-boutique';
 import {ModuleLayoutComponent} from '../../shared/components/module-layout/module-layout.component';
-import {TestAcheteur} from '../acheteur/pages/test-acheteur/test-acheteur';
+import {ProductsListBoutiqueComponent} from './pages/products-list-boutique/products-list-boutique.component';
 
 const routes: Routes = [
   {
@@ -10,7 +10,9 @@ const routes: Routes = [
     component: ModuleLayoutComponent,
     children: [
       { path: 'test-boutique', component: TestBoutique },
-      { path: '', redirectTo: 'test-boutique', pathMatch: 'full' }
+      { path: 'products/user', component: ProductsListBoutiqueComponent },
+      { path: '', redirectTo: 'products/user', pathMatch: 'full' }
+
     ]
   }
 ];

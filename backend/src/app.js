@@ -8,6 +8,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorMiddleware');
@@ -71,6 +72,9 @@ if (process.env.NODE_ENV === 'development') {
     next();
   });
 }
+
+// Servir les fichiers statiques (photos)
+app.use('/photos', express.static(path.join(__dirname, '../photos')));
 
 // API routes
 app.use('/api', routes);

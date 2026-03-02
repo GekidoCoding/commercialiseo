@@ -5,13 +5,25 @@ import { AdminService } from '../../services/admin.service';
 import { finalize } from 'rxjs/operators';
 import {ProductRead} from '../../../../shared/model/product-read';
 
-interface StatCard {
-  titre: string;
-  valeur: string | number;
-  icone: string;
-  couleur: string;
-  evolution?: string;
-  evolutionPositive?: boolean;
+interface StatsAdmin {
+  // Volumes
+  total: number;
+  enStock: number;
+  stockFaible: number;
+  rupture: number;
+  // Pourcentages
+  pctEnStock: number;
+  pctStockFaible: number;
+  pctRupture: number;
+  // Catalogue
+  nbCategories: number;
+  totalStock: number;
+  moyenneStock: string;
+  stockMax: number;
+  // Score santé (0-100)
+  scoresSante: number;
+  // Top catégories (max 5)
+  topCategories: { nom: string; count: number; pct: number }[];
 }
 
 @Component({
@@ -27,42 +39,13 @@ export class ProduitsListComponent implements OnInit {
   isLoading: boolean = false;
   skeletonRows: number[] = Array(5).fill(0); // 5 lignes de skeleton
 
-  // Données des statistiques
-  statsCards: StatCard[] = [
-    {
-      titre: 'Total Produits',
-      valeur: 1258,
-      icone: 'fa-box',
-      couleur: 'primary',
-      evolution: '+12%',
-      evolutionPositive: true
-    },
-    {
-      titre: 'En Stock',
-      valeur: 1025,
-      icone: 'fa-check-circle',
-      couleur: 'success',
-      evolution: '+5%',
-      evolutionPositive: true
-    },
-
-    {
-      titre: 'Stock Faible',
-      valeur: 198,
-      icone: 'fa-exclamation-triangle',
-      couleur: 'warning',
-      evolution: '-3%',
-      evolutionPositive: false
-    },
-    {
-      titre: 'Rupture de Stock',
-      valeur: 35,
-      icone: 'fa-times-circle',
-      couleur: 'danger',
-      evolution: '+8%',
-      evolutionPositive: false
-    }
-  ];
+  // Statistiques admin dynamiques
+  statsAdmin: StatsAdmin = {
+    total: 0, enStock: 0, stockFaible: 0, rupture: 0,
+    pctEnStock: 0, pctStockFaible: 0, pctRupture: 0,
+    nbCategories: 0, totalStock: 0, moyenneStock: '0', stockMax: 0,
+    scoresSante: 0, topCategories: []
+  };
 
   // Liste des produits
   produits: ProductRead[] = [];
@@ -113,6 +96,7 @@ export class ProduitsListComponent implements OnInit {
           if (response.success && response.data) {
             this.produits = response.data;
             this.extraireCategories();
+            this.calculerStatistiques();
             this.appliquerFiltres();
           } else {
             this.errorMessage = 'Erreur lors du chargement des produits';
@@ -126,19 +110,49 @@ export class ProduitsListComponent implements OnInit {
   }
 
   calculerStatistiques(): void {
-    // const total = this.produits.length;
-    // const enStock = this.produits.filter(p => p.quantity > 10).length;
-    // const stockFaible = this.produits.filter(p => p.quantity > 0 && p.quantity <= 10).length;
-    // const rupture = this.produits.filter(p => p.quantity === 0).length;
-    // const total = 0;
-    // const enStock = 0;
-    // const stockFaible = 0;
-    // const rupture = 0;
-    //
-    // this.statsCards[0].valeur = total;
-    // this.statsCards[1].valeur = enStock;
-    // this.statsCards[2].valeur = stockFaible;
-    // this.statsCards[3].valeur = rupture;
+    const total = this.produits.length;
+    const enStock    = this.produits.filter(p => p.quantity > 10).length;
+    const stockFaible = this.produits.filter(p => p.quantity > 0 && p.quantity <= 10).length;
+    const rupture    = this.produits.filter(p => p.quantity === 0).length;
+
+    const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0;
+
+    // Stock quantités
+    const quantities = this.produits.map(p => p.quantity || 0);
+    const totalStock = quantities.reduce((s, q) => s + q, 0);
+    const stockMax   = quantities.length > 0 ? Math.max(...quantities) : 0;
+    const moyenneStock = total > 0 ? (totalStock / total).toFixed(1) : '0';
+
+    // Score santé : 100 si tout en stock, diminue selon faible et rupture
+    const scoresSante = Math.max(0, Math.round(100 - (pct(stockFaible) * 0.4) - (pct(rupture) * 1.0)));
+
+    // Top catégories (top 5 par nb de produits)
+    const catMap = new Map<string, number>();
+    this.produits.forEach(p => {
+      const nom = p.category?.name || 'Sans catégorie';
+      catMap.set(nom, (catMap.get(nom) || 0) + 1);
+    });
+    const maxCatCount = Math.max(...Array.from(catMap.values()), 1);
+    const topCategories = Array.from(catMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([nom, count]) => ({
+        nom,
+        count,
+        pct: Math.round((count / maxCatCount) * 100)
+      }));
+
+    this.statsAdmin = {
+      total, enStock, stockFaible, rupture,
+      pctEnStock: pct(enStock),
+      pctStockFaible: pct(stockFaible),
+      pctRupture: pct(rupture),
+      nbCategories: catMap.size,
+      totalStock, stockMax,
+      moyenneStock,
+      scoresSante,
+      topCategories
+    };
   }
 
   extraireCategories(): void {

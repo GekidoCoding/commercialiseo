@@ -32,22 +32,258 @@
     </div>
   </div>
 
-  <!-- Section Statistiques -->
-  <div class="stats-grid" *ngIf="!isLoading">
-    <div class="stat-card" *ngFor="let stat of statsCards" [class]="'stat-card--' + stat.couleur">
-      <div class="stat-icon">
-        <i class="fas" [class]="stat.icone"></i>
+  <!-- ==================== STATS ADMIN DASHBOARD ==================== -->
+  <div class="admin-dashboard" *ngIf="!isLoading">
+
+    <!-- RANGÉE 1 : KPIs principaux avec mini-barres de progression -->
+    <div class="dashboard-row dashboard-row--kpis">
+
+      <!-- Total produits -->
+      <div class="kpi-card kpi-card--primary">
+        <div class="kpi-card__header">
+          <div class="kpi-card__icon"><i class="fas fa-boxes"></i></div>
+          <span class="kpi-card__trend kpi-card__trend--up">
+            <i class="fas fa-arrow-up"></i> {{ statsAdmin.pctEnStock }}% sains
+          </span>
+        </div>
+        <div class="kpi-card__value">{{ statsAdmin.total }}</div>
+        <div class="kpi-card__label">Total Produits</div>
+        <div class="kpi-card__progress">
+          <div class="kpi-progress-bar">
+            <div class="kpi-progress-fill kpi-progress-fill--primary" [style.width.%]="100"></div>
+          </div>
+          <div class="kpi-card__sub">{{ statsAdmin.nbCategories }} catégories · {{ statsAdmin.totalStock }} unités en stock</div>
+        </div>
       </div>
-      <div class="stat-content">
-        <h3 class="stat-value">{{ stat.valeur }}</h3>
-        <p class="stat-label">{{ stat.titre }}</p>
-        <span class="stat-evolution" [class.positive]="stat.evolutionPositive" [class.negative]="!stat.evolutionPositive" *ngIf="stat.evolution">
-          <i class="fas" [class.fa-arrow-up]="stat.evolutionPositive" [class.fa-arrow-down]="!stat.evolutionPositive"></i>
-          {{ stat.evolution }}
-        </span>
+
+      <!-- En Stock -->
+      <div class="kpi-card kpi-card--success">
+        <div class="kpi-card__header">
+          <div class="kpi-card__icon"><i class="fas fa-check-circle"></i></div>
+          <span class="kpi-card__trend kpi-card__trend--up">
+            <i class="fas fa-arrow-up"></i> {{ statsAdmin.pctEnStock }}%
+          </span>
+        </div>
+        <div class="kpi-card__value">{{ statsAdmin.enStock }}</div>
+        <div class="kpi-card__label">En Stock Normal</div>
+        <div class="kpi-card__progress">
+          <div class="kpi-progress-bar">
+            <div class="kpi-progress-fill kpi-progress-fill--success" [style.width.%]="statsAdmin.pctEnStock"></div>
+          </div>
+          <div class="kpi-card__sub">{{ statsAdmin.pctEnStock }}% du catalogue disponible</div>
+        </div>
       </div>
+
+      <!-- Stock Faible -->
+      <div class="kpi-card kpi-card--warning">
+        <div class="kpi-card__header">
+          <div class="kpi-card__icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <span class="kpi-card__trend kpi-card__trend--warn" *ngIf="statsAdmin.stockFaible > 0">
+            <i class="fas fa-bell"></i> Alerte
+          </span>
+        </div>
+        <div class="kpi-card__value">{{ statsAdmin.stockFaible }}</div>
+        <div class="kpi-card__label">Stock Faible (≤10)</div>
+        <div class="kpi-card__progress">
+          <div class="kpi-progress-bar">
+            <div class="kpi-progress-fill kpi-progress-fill--warning" [style.width.%]="statsAdmin.pctStockFaible"></div>
+          </div>
+          <div class="kpi-card__sub">{{ statsAdmin.pctStockFaible }}% du catalogue à surveiller</div>
+        </div>
+      </div>
+
+      <!-- Rupture -->
+      <div class="kpi-card kpi-card--danger">
+        <div class="kpi-card__header">
+          <div class="kpi-card__icon"><i class="fas fa-times-circle"></i></div>
+          <span class="kpi-card__trend kpi-card__trend--danger" *ngIf="statsAdmin.rupture > 0">
+            <i class="fas fa-exclamation"></i> Critique
+          </span>
+        </div>
+        <div class="kpi-card__value">{{ statsAdmin.rupture }}</div>
+        <div class="kpi-card__label">Rupture de Stock</div>
+        <div class="kpi-card__progress">
+          <div class="kpi-progress-bar">
+            <div class="kpi-progress-fill kpi-progress-fill--danger" [style.width.%]="statsAdmin.pctRupture"></div>
+          </div>
+          <div class="kpi-card__sub">{{ statsAdmin.pctRupture }}% du catalogue en rupture</div>
+        </div>
+      </div>
+
     </div>
+
+    <!-- RANGÉE 2 : Barre de santé globale + métriques secondaires -->
+    <div class="dashboard-row dashboard-row--health">
+
+      <!-- Barre de santé -->
+      <div class="health-panel">
+        <div class="health-panel__header">
+          <div class="health-panel__title">
+            <i class="fas fa-heartbeat"></i> Santé du catalogue
+          </div>
+          <div class="health-panel__score" [class.score--good]="statsAdmin.scoresSante >= 70" [class.score--warn]="statsAdmin.scoresSante >= 40 && statsAdmin.scoresSante < 70" [class.score--bad]="statsAdmin.scoresSante < 40">
+            {{ statsAdmin.scoresSante }}/100
+          </div>
+        </div>
+        <div class="health-bar-stacked">
+          <div class="hbs-segment hbs-segment--good"   [style.width.%]="statsAdmin.pctEnStock"     [title]="statsAdmin.enStock + ' en stock'"></div>
+          <div class="hbs-segment hbs-segment--warn"   [style.width.%]="statsAdmin.pctStockFaible" [title]="statsAdmin.stockFaible + ' stock faible'"></div>
+          <div class="hbs-segment hbs-segment--danger" [style.width.%]="statsAdmin.pctRupture"     [title]="statsAdmin.rupture + ' en rupture'"></div>
+        </div>
+        <div class="health-bar-legend">
+          <span class="hbl-item hbl-item--good">  <span class="hbl-dot"></span> En stock ({{ statsAdmin.pctEnStock }}%)</span>
+          <span class="hbl-item hbl-item--warn">  <span class="hbl-dot"></span> Stock faible ({{ statsAdmin.pctStockFaible }}%)</span>
+          <span class="hbl-item hbl-item--danger"><span class="hbl-dot"></span> Rupture ({{ statsAdmin.pctRupture }}%)</span>
+        </div>
+
+        <!-- Mini métriques en grille -->
+        <div class="health-metrics-grid">
+          <div class="hm-item">
+            <span class="hm-label">Taux disponibilité</span>
+            <span class="hm-value hm-value--good">{{ statsAdmin.pctEnStock }}%</span>
+          </div>
+          <div class="hm-item">
+            <span class="hm-label">Produits actifs</span>
+            <span class="hm-value">{{ statsAdmin.enStock + statsAdmin.stockFaible }}</span>
+          </div>
+          <div class="hm-item">
+            <span class="hm-label">Moy. stock / produit</span>
+            <span class="hm-value">{{ statsAdmin.moyenneStock }}</span>
+          </div>
+          <div class="hm-item">
+            <span class="hm-label">Stock max</span>
+            <span class="hm-value">{{ statsAdmin.stockMax }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Catégories par nb produits (mini bar chart CSS) -->
+      <div class="chart-panel">
+        <div class="chart-panel__header">
+          <i class="fas fa-th-large"></i> Répartition par catégorie
+          <span class="chart-panel__count">{{ statsAdmin.nbCategories }} cat.</span>
+        </div>
+        <div class="bar-chart">
+          <div class="bar-chart__row" *ngFor="let cat of statsAdmin.topCategories">
+            <div class="bc-label" [title]="cat.nom">{{ cat.nom }}</div>
+            <div class="bc-bar-track">
+              <div class="bc-bar-fill" [style.width.%]="cat.pct" [title]="cat.count + ' produits'">
+                <span class="bc-bar-value" *ngIf="cat.pct > 15">{{ cat.count }}</span>
+              </div>
+              <span class="bc-bar-value-out" *ngIf="cat.pct <= 15">{{ cat.count }}</span>
+            </div>
+            <div class="bc-pct">{{ cat.pct }}%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribution stock (mini donut visuel CSS) -->
+      <div class="dist-panel">
+        <div class="dist-panel__header">
+          <i class="fas fa-chart-pie"></i> Distribution du stock
+        </div>
+
+        <div class="dist-donut-wrap">
+          <div class="dist-donut">
+            <svg viewBox="0 0 36 36" class="donut-svg">
+              <!-- Track -->
+              <circle class="donut-track" cx="18" cy="18" r="15.915" />
+              <!-- En stock (vert) -->
+              <circle class="donut-seg donut-seg--good" cx="18" cy="18" r="15.915"
+                      [attr.stroke-dasharray]="statsAdmin.pctEnStock + ' ' + (100 - statsAdmin.pctEnStock)"
+                      stroke-dashoffset="25" />
+              <!-- Stock faible (jaune) -->
+              <circle class="donut-seg donut-seg--warn" cx="18" cy="18" r="15.915"
+                      [attr.stroke-dasharray]="statsAdmin.pctStockFaible + ' ' + (100 - statsAdmin.pctStockFaible)"
+                      [attr.stroke-dashoffset]="100 - statsAdmin.pctEnStock + 25" />
+              <!-- Rupture (rouge) -->
+              <circle class="donut-seg donut-seg--danger" cx="18" cy="18" r="15.915"
+                      [attr.stroke-dasharray]="statsAdmin.pctRupture + ' ' + (100 - statsAdmin.pctRupture)"
+                      [attr.stroke-dashoffset]="100 - statsAdmin.pctEnStock - statsAdmin.pctStockFaible + 25" />
+            </svg>
+            <div class="donut-center">
+              <span class="donut-center-value">{{ statsAdmin.total }}</span>
+              <span class="donut-center-label">produits</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dist-legend">
+          <div class="dist-legend-item dist-legend-item--good">
+            <span class="dl-dot"></span>
+            <span class="dl-label">En stock</span>
+            <span class="dl-value">{{ statsAdmin.enStock }}</span>
+          </div>
+          <div class="dist-legend-item dist-legend-item--warn">
+            <span class="dl-dot"></span>
+            <span class="dl-label">Stock faible</span>
+            <span class="dl-value">{{ statsAdmin.stockFaible }}</span>
+          </div>
+          <div class="dist-legend-item dist-legend-item--danger">
+            <span class="dl-dot"></span>
+            <span class="dl-label">Rupture</span>
+            <span class="dl-value">{{ statsAdmin.rupture }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RANGÉE 3 : Métriques secondaires en ligne -->
+    <div class="dashboard-row dashboard-row--metrics">
+
+      <div class="metric-chip metric-chip--blue">
+        <i class="fas fa-layer-group"></i>
+        <div class="mc-body">
+          <span class="mc-value">{{ statsAdmin.nbCategories }}</span>
+          <span class="mc-label">Catégories actives</span>
+        </div>
+      </div>
+
+      <div class="metric-chip metric-chip--teal">
+        <i class="fas fa-cubes"></i>
+        <div class="mc-body">
+          <span class="mc-value">{{ statsAdmin.totalStock }}</span>
+          <span class="mc-label">Unités totales en stock</span>
+        </div>
+      </div>
+
+      <div class="metric-chip metric-chip--purple">
+        <i class="fas fa-chart-bar"></i>
+        <div class="mc-body">
+          <span class="mc-value">{{ statsAdmin.moyenneStock }}</span>
+          <span class="mc-label">Moy. unités / produit</span>
+        </div>
+      </div>
+
+      <div class="metric-chip metric-chip--indigo">
+        <i class="fas fa-crown"></i>
+        <div class="mc-body">
+          <span class="mc-value mc-value--text">{{ statsAdmin.topCategories[0]?.nom || '-' }}</span>
+          <span class="mc-label">Top catégorie</span>
+        </div>
+      </div>
+
+      <div class="metric-chip" [class.metric-chip--danger]="statsAdmin.rupture > 0" [class.metric-chip--success]="statsAdmin.rupture === 0">
+        <i class="fas" [class.fa-exclamation-circle]="statsAdmin.rupture > 0" [class.fa-shield-alt]="statsAdmin.rupture === 0"></i>
+        <div class="mc-body">
+          <span class="mc-value">{{ statsAdmin.rupture > 0 ? statsAdmin.rupture + ' alertes' : 'Aucune' }}</span>
+          <span class="mc-label">Ruptures actives</span>
+        </div>
+      </div>
+
+      <div class="metric-chip metric-chip--orange">
+        <i class="fas fa-arrow-trend-up"></i>
+        <div class="mc-body">
+          <span class="mc-value">{{ statsAdmin.stockMax }}</span>
+          <span class="mc-label">Stock maximum (un produit)</span>
+        </div>
+      </div>
+
+    </div>
+
   </div>
+  <!-- ==================== FIN STATS ADMIN DASHBOARD ==================== -->
 
   <!-- Section Filtres et Tableau -->
   <div class="content-card">
