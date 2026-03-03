@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  // apiUrl: 'http://localhost:5000',
+  apiUrl: 'http://localhost:5000',
 
-  apiUrl: ' https://commercialiseo.onrender.com'
+  // apiUrl: 'https://commercialiseo-37lg.onrender.com'
 
 };
