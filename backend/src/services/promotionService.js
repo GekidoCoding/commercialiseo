@@ -5,19 +5,16 @@ class PromotionService{
         try {
             const data = { ...promotionData };
 
-            // Gestion du calcul automatique : duration vs dateBegin/dateEnd
             const hasDuration = data.duration !== undefined && data.duration !== null && data.duration !== 0;
             const hasDateBegin = data.dateBegin !== undefined && data.dateBegin !== null;
             const hasDateEnd = data.dateEnd !== undefined && data.dateEnd !== null;
 
             if (!hasDuration && hasDateBegin && hasDateEnd) {
-                // Calculer duration à partir de dateBegin et dateEnd (en heures)
                 const begin = new Date(data.dateBegin);
                 const end = new Date(data.dateEnd);
                 const diffMs = end - begin;
                 data.duration = Math.ceil(diffMs / (1000 * 60 * 60));
             } else if (hasDuration && !hasDateBegin && !hasDateEnd) {
-                // Calculer dateBegin et dateEnd à partir de duration
                 const now = new Date();
                 data.dateBegin = now;
                 data.dateEnd = new Date(now.getTime() + (data.duration * 60 * 60 * 1000));
@@ -26,7 +23,6 @@ class PromotionService{
             const promotion = new Promotion(data);
             await promotion.save();
 
-            // Vérifier que le variant existe pour récupérer le productId
             const variant = await Variant.findById(promotion.variantId);
             if (!variant) {
                 return { success: false, error: 'Variant lié introuvable', code: 'VARIANT_NOT_FOUND' };

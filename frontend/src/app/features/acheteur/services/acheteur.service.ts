@@ -7,6 +7,7 @@ import {ApiResponse} from '../../../shared/model/api-response';
 import {ProductRead} from '../../../shared/model/product-read';
 import {catchError} from 'rxjs/operators';
 import {CartItem} from '../model/cart-item';
+import {PurchaseRequest, PurchaseResponse} from '../model/purchase-request';
 
 @Injectable({
   providedIn: 'root',
@@ -44,7 +45,30 @@ export class AcheteurService {
 
 
   /**
+   * Confirme l'achat des articles du panier
+   * @param acheteurId - ID de l'acheteur connecté
+   * @param password - Mot de passe pour validation
+   * @param variants - Tableau des variantes avec leur quantité
+   * @returns Observable avec la réponse de l'API
+   */
+  confirmPurchase(
+    acheteurId: string,
+    password: string,
+    variants: { variantId: string; quantity: number }[]
+  ): Observable<ApiResponse<PurchaseResponse>> {
+    const request: PurchaseRequest = {
+      acheteurId,
+      password,
+      variants
+    };
+
+    return this.http.post<ApiResponse<PurchaseResponse>>(`${this.apiUrl}/purchase`, request)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Gestion des erreurs
+   * Interprète les erreurs du backend (ApiError) et les formate correctement
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Une erreur inconnue est survenue';
@@ -53,11 +77,18 @@ export class AcheteurService {
       // Erreur côté client
       errorMessage = `Erreur: ${error.error.message}`;
     } else {
-      // Erreur côté serveur
-      errorMessage = error.error?.message || `Code d'erreur: ${error.status}\nMessage: ${error.message}`;
+      // Erreur côté serveur - Format ApiError du backend
+      if (error.error?.message) {
+        // Le backend renvoie un objet avec message et statusCode
+        errorMessage = error.error.message;
+      } else if (error.error?.error) {
+        errorMessage = error.error.error;
+      } else {
+        errorMessage = `Code d'erreur: ${error.status}\nMessage: ${error.message}`;
+      }
     }
 
-    console.error(errorMessage);
+    console.error('Erreur API:', error);
     return throwError(() => new Error(errorMessage));
   }
 }

@@ -15,6 +15,9 @@ router.use(authorize('acheteur'));   // Vérifie le rôle (ici USER)
 // Routes publiques
 router.get('/products/for-clients', ...acheteurController.findAllProducts);
 
+// Route d'achat
+router.post('/purchase', ...acheteurController.confirmPurchase);
+
 
 module.exports = router;
 

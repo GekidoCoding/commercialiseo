@@ -55,6 +55,17 @@ const PRODUCT_MESSAGES = {
   INVALID_PRICE: 'Le prix doit être un nombre positif',
 };
 
+const PURCHASE_MESSAGES = {
+  // Success
+  PURCHASE_SUCCESS: 'Achat effectué avec succès',
+
+  // Errors
+  INSUFFICIENT_STOCK: 'Stock insuffisant',
+  VARIANT_NOT_FOUND: 'Variant non trouvé',
+  INVALID_PASSWORD: 'Mot de passe incorrect',
+  PURCHASE_FAILED: 'L\'achat a échoué',
+};
+
 const COMMON_MESSAGES = {
   RESOURCE_NOT_FOUND: 'Ressource non trouvée',
   VALIDATION_ERROR: 'Erreur de validation',
@@ -65,5 +76,6 @@ module.exports = {
   AUTH_MESSAGES,
   USER_MESSAGES,
   PRODUCT_MESSAGES,
+  PURCHASE_MESSAGES,
   COMMON_MESSAGES,
 };

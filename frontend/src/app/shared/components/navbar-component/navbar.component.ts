@@ -9,6 +9,8 @@ import {takeUntil} from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import {AuthUtilService} from '../../services/auth-util.service';
 import {User} from '../../../features/auth/models/User';
+import {AcheteurService} from '../../../features/acheteur/services/acheteur.service';
+import {ToastService} from '../../services/toast.service';
 
 const CART_KEY = 'cart_variants';
 
@@ -61,8 +63,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   // ════════════════════════════════════════════════════
   // LIFECYCLE
   // ════════════════════════════════════════════════════
-  constructor(private cartEventService: CartEventService ,
-              private authService:AuthUtilService
+  constructor(private cartEventService: CartEventService,
+              private authService: AuthUtilService,
+              private acheteurService: AcheteurService,
+              private toastService: ToastService
               ) {}
   ngOnInit(): void {
     this.userConnected= this.authService.getUserFromStorage();
@@ -244,22 +248,63 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.passwordError = 'Veuillez saisir votre mot de passe.';
       return;
     }
+
+    // Vérifier que l'utilisateur est connecté
+    if (!this.userConnected || !this.userConnected.id) {
+      this.passwordError = 'Vous devez être connecté pour effectuer un achat.';
+      return;
+    }
+
+    // Vérifier que le panier n'est pas vide
+    if (this.cartItems.length === 0) {
+      this.passwordError = 'Votre panier est vide.';
+      return;
+    }
+
     this.isSubmittingOrder = true;
-    this.passwordError     = '';
+    this.passwordError = '';
 
-    // TODO : remplacer par votre appel service réel
-    // this.orderService.confirm(this.cartItems, this.confirmPassword).subscribe({
-    //   next: () => { this.closeOrderModal(); this.cartItems = []; this.saveCart(); },
-    //   error: (err) => { this.passwordError = err.message; this.isSubmittingOrder = false; }
-    // });
+    // Préparer les données pour l'API
+    const variants = this.cartItems.map(item => ({
+      variantId: item.variant._id,
+      quantity: item.quantity
+    }));
 
-    // Simulation temporaire :
-    setTimeout(() => {
-      this.isSubmittingOrder = false;
-      this.closeOrderModal();
-      this.cartItems = [];
-      this.saveCart();
-    }, 1500);
+    // Appel au service de confirmation d'achat
+    this.acheteurService.confirmPurchase(
+      this.userConnected.id,
+      this.confirmPassword,
+      variants as { variantId: string; quantity: number }[]
+    ).subscribe({
+      next: (response) => {
+        this.isSubmittingOrder = false;
+
+        if (response.success) {
+          // Succès : afficher le message et vider le panier
+          this.toastService.success(response.message || 'Achat effectué avec succès !');
+          this.closeOrderModal();
+          this.cartItems = [];
+          this.saveCart();
+        } else {
+          // Le backend a renvoyé success: false
+          this.passwordError = response.message || 'Une erreur est survenue lors de l\'achat.';
+        }
+      },
+      error: (err) => {
+        this.isSubmittingOrder = false;
+        // Afficher l'erreur venant du backend (ApiError)
+        this.passwordError = err.message || 'Erreur lors de la confirmation de l\'achat.';
+
+        // Gestion spécifique des erreurs courantes
+        if (err.message?.includes('Mot de passe incorrect')) {
+          this.passwordError = 'Mot de passe incorrect. Veuillez réessayer.';
+        } else if (err.message?.includes('Stock insuffisant')) {
+          this.passwordError = err.message;
+        } else if (err.message?.includes('non trouvé')) {
+          this.passwordError = err.message;
+        }
+      }
+    });
   }
 
   // ════════════════════════════════════════════════════
