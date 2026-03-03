@@ -3,7 +3,8 @@
  * Utilise le pattern Singleton pour éviter la création multiple de transports
  */
 
-const nodemailer = require('nodemailer');
+//const nodemailer = require('nodemailer');
+
 const { AUTH_MESSAGES } = require('../constants/messages');
 const ApiError = require('../utils/ApiError');
 const { HTTP_STATUS } = require('../constants/httpStatus');
@@ -58,13 +59,13 @@ class EmailService {
    * Initialise le transporteur nodemailer
    */
   initializeTransporter() {
-    console.log('Initialize transporter');
+    /*console.log('Initialize transporter');
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.warn('⚠️ Configuration email manquante. Les emails ne seront pas envoyés.');
       return;
     }
     console.log('Creating transporter');
-    this.transporter  = nodemailer.createTransport({
+    this.transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
@@ -73,14 +74,14 @@ class EmailService {
     });
 
     // Vérifier la connexion au démarrage
-    this.verifyConnection();
+    this.verifyConnection();*/
   }
 
   /**
    * Vérifie la connexion au serveur SMTP
    */
   async verifyConnection() {
-    if (!this.transporter) return false;
+    /*if (!this.transporter) return false;
 
     try {
       await this.transporter.verify();
@@ -89,7 +90,9 @@ class EmailService {
     } catch (error) {
       console.error('❌ Erreur connexion serveur email:', error.message);
       return false;
-    }
+    }*/
+
+    return false;
   }
 
   /**
@@ -135,6 +138,7 @@ class EmailService {
         AUTH_MESSAGES.EMAIL_SEND_ERROR
       );
     }*/
+    return null
   }
 
   /**
@@ -144,7 +148,7 @@ class EmailService {
    * @param {number} [expiresInMinutes=4] - Durée de validité en minutes
    */
   async sendVerificationCode(email, code, expiresInMinutes = 4) {
-    /*const subject = 'Code de vérification - Commercialiseo';
+    const subject = 'Code de vérification - Commercialiseo';
     const text = `Bonjour,
 
 Votre code de vérification est : ${code}
@@ -171,7 +175,7 @@ L'équipe Commercialiseo`;
       </div>
     `;
 
-    return this.sendEmail({ to: email, subject, text, html });*/
+    return this.sendEmail({ to: email, subject, text, html });
   }
 
   /**
@@ -220,7 +224,7 @@ L'équipe Commercialiseo`;
    * @param {string} username - Nom d'utilisateur
    */
   async sendWelcomeEmail(email, username) {
-    /*const subject = 'Bienvenue sur Commercialiseo !';
+    const subject = 'Bienvenue sur Commercialiseo !';
     const text = `Bonjour ${username},
 
 Bienvenue sur Commercialiseo ! Votre compte a été créé avec succès.
@@ -252,7 +256,7 @@ L'équipe Commercialiseo`;
     `;
 
     return this.sendEmail({ to: email, subject, text, html });
-  }*/
+  }
 }
 
 // Exporte une instance singleton
