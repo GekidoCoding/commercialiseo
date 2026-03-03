@@ -200,30 +200,40 @@
         </div>
 
         <!-- Section Upload Images -->
-        <div class="form-section">
+        <div class="form-section images-section">
           <div class="section-header">
             <label class="section-title">
               <i class="fas fa-images"></i>
               Images du Variant
+              <span class="images-count" *ngIf="imagePreviews.length > 0">{{ imagePreviews.length }}</span>
             </label>
           </div>
 
-          <div class="upload-container">
+          <div class="images-body">
+
+            <!-- Zone de drop / upload -->
             <div class="upload-zone" (click)="fileInput.click()">
               <input #fileInput type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden>
-              <i class="fas fa-cloud-upload-alt"></i>
-              <p>Cliquez ou glissez des images ici</p>
-              <span>PNG, JPG jusqu'à 5MB</span>
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <p class="upload-label">Cliquez ou glissez des images ici</p>
+              <span class="upload-hint">PNG, JPG, WEBP · max 10 MB</span>
             </div>
 
-            <div class="image-previews" *ngIf="imagePreviews.length > 0">
-              <div class="preview-item" *ngFor="let preview of imagePreviews; let i = index">
-                <img [src]="preview" alt="Preview">
-                <button type="button" class="btn-remove-image" (click)="removeImage(i)">
-                  <i class="fas fa-times"></i>
-                </button>
+            <!-- Grille de miniatures -->
+            <div class="thumbnails-grid" *ngIf="imagePreviews.length > 0">
+              <div class="thumbnail-card" *ngFor="let preview of imagePreviews; let i = index">
+                <div class="thumbnail-wrapper">
+                  <img [src]="preview" alt="Aperçu {{ i + 1 }}" class="thumbnail-img">
+                  <div class="thumbnail-overlay">
+                    <button type="button" class="btn-thumb-delete" (click)="removeImage(i)" title="Supprimer">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <span class="thumbnail-name">Image {{ i + 1 }}</span>
               </div>
             </div>
+
           </div>
         </div>
 

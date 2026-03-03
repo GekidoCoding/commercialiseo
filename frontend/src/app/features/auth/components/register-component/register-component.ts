@@ -21,6 +21,9 @@ export class RegisterComponent implements OnInit {
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
 
+  // Rôles disponibles pour l'inscription (sans admin)
+  availableRoles: string[] = ['acheteur', 'boutique'];
+
   passwordStrength: PasswordStrength = {
     score: 0,
     label: 'Trop court',

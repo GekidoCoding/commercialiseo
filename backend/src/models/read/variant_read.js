@@ -12,6 +12,10 @@ const variantReadSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
+        variantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
         price: {
             type: Number,
         },

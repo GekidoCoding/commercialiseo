@@ -15,4 +15,9 @@ router.get('/products/user/:userId', ...boutiqueController.findAllForUser);
 router.post('/create-variant', handleUpload, ...boutiqueController.createVariant);
 router.put('/update-variant', handleUpload, ...boutiqueController.updateVariant);
 router.delete('/delete-variant/:id', ...boutiqueController.deleteVariant);
+
+router.post('/create-promotion', handleUpload, ...boutiqueController.createPromotion);
+router.put('/update-promotion', handleUpload, ...boutiqueController.updatePromotion);
+router.delete('/delete-promotion/:id', ...boutiqueController.deletePromotion);
+
 module.exports = router;

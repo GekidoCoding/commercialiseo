@@ -6,6 +6,7 @@ import { Variant } from '../../../../shared/model/Variant';
 import { finalize } from 'rxjs/operators';
 import {AuthUtilService} from '../../../../shared/services/auth-util.service';
 import {BoutiqueService} from '../../services/boutique.service';
+import {ToastService} from '../../../../shared/services/toast.service';
 
 
 interface Specification {
@@ -56,7 +57,8 @@ export class VariantAddFormComponent implements OnInit {
     private boutiqueService: BoutiqueService,
     private publicService: PublicService,
     private authService: AuthUtilService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private toastr : ToastService
   ) {}
   ngOnInit(): void {
     this.chargerProduits();
@@ -69,7 +71,7 @@ export class VariantAddFormComponent implements OnInit {
       .subscribe({
         next: (response) => {
           if (response.success) {
-            console.log(response);
+            console.log("produits in boutiques :"+ response);
             this.produits = response.data || [];
             console.log(response.data);
           }
@@ -225,6 +227,7 @@ export class VariantAddFormComponent implements OnInit {
       .subscribe({
         next: (response) => {
           if (response.success) {
+            this.toastr.success('Variant créé avec succès');
             this.activeModal.close('saved');
           } else {
             this.errorMessage = response.message || 'Erreur lors de la création';

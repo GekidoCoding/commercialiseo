@@ -19,8 +19,17 @@ class ProductService{
 
     async updateProduct(productData) {
         try {
-            const product = new Product(productData);
-            await product.save();
+            const { _id, ...updateData } = productData;
+            const product = await Product.findByIdAndUpdate(
+                _id,
+                updateData,
+                { new: true, runValidators: true }
+            );
+
+            if (!product) {
+                return { success: false, error: 'Produit non trouvé', code: 'NOT_FOUND' };
+            }
+
             return { success: true, data: product };
         } catch (error) {
             return {

@@ -1174,3 +1174,175 @@
 .autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
   background: var(--gray-400);
 }
+
+/* ============================================
+   SECTION IMAGES — UPLOAD & MINIATURES
+============================================ */
+.images-section {
+  padding: 0;
+  overflow: hidden;
+}
+
+.images-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Zone de drop */
+.upload-zone {
+  border: 2px dashed var(--gray-300);
+  background: var(--gray-50);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+}
+
+.upload-zone:hover {
+  border-color: var(--green-primary);
+  background: var(--green-bg);
+}
+
+.upload-icon {
+  font-size: 2rem;
+  color: var(--gray-400);
+  transition: color var(--transition);
+}
+
+.upload-zone:hover .upload-icon {
+  color: var(--green-primary);
+}
+
+.upload-label {
+  margin: 0;
+  font-weight: 600;
+  color: var(--gray-600);
+  font-size: 0.9375rem;
+}
+
+.upload-hint {
+  font-size: 0.8125rem;
+  color: var(--gray-400);
+}
+
+/* Badge compteur dans le titre de section */
+.images-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--green-primary);
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 99px;
+  margin-left: 0.375rem;
+}
+
+/* Grille de miniatures */
+.thumbnails-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Carte miniature */
+.thumbnail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.thumbnail-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid var(--gray-200);
+  background: var(--gray-100);
+  transition: border-color var(--transition);
+}
+
+.thumbnail-wrapper:hover {
+  border-color: var(--green-primary);
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition);
+}
+
+.thumbnail-wrapper:hover .thumbnail-img {
+  transform: scale(1.05);
+}
+
+/* Overlay au survol */
+.thumbnail-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.thumbnail-wrapper:hover .thumbnail-overlay {
+  opacity: 1;
+}
+
+/* Bouton supprimer dans l'overlay */
+.btn-thumb-delete {
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(255,255,255,0.8);
+  background: rgba(239, 68, 68, 0.85);
+  color: var(--white);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  transition: all var(--transition);
+}
+
+.btn-thumb-delete:hover {
+  background: var(--red-500);
+  border-color: var(--white);
+  transform: scale(1.1);
+}
+
+/* Nom sous la miniature */
+.thumbnail-name {
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .thumbnails-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 0.5rem;
+  }
+  .images-body {
+    padding: 1rem;
+  }
+}

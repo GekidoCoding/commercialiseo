@@ -7,13 +7,17 @@ import {ProductsListBoutiqueComponent} from './pages/products-list-boutique/prod
 import {VariantAddFormComponent} from './components/variant-add-form/variant-add-form.component';
 import {VariantUpdateFormComponent} from './components/variant-update-form/variant-update-form.component';
 import {FormsModule} from '@angular/forms';
+import {PromotionAddFormComponent} from './components/promotion-add-form.component/promotion-add-form.component';
+import {PromotionUpdateFormComponent} from './components/promotion-update-form/promotion-update-form.component';
 
 @NgModule({
   declarations: [
     TestBoutique,
     ProductsListBoutiqueComponent,
     VariantAddFormComponent,
-    VariantUpdateFormComponent
+    VariantUpdateFormComponent,
+    PromotionAddFormComponent,
+    PromotionUpdateFormComponent
   ],
   imports: [
     CommonModule,

@@ -85,11 +85,6 @@ export class ProduitsListComponent implements OnInit {
     this.errorMessage = '';
 
     this.adminService.findAllProducts()
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
-      )
       .subscribe({
         next: (response) => {
           console.log(response);
@@ -98,6 +93,7 @@ export class ProduitsListComponent implements OnInit {
             this.extraireCategories();
             this.calculerStatistiques();
             this.appliquerFiltres();
+            this.isLoading = false;
           } else {
             this.errorMessage = 'Erreur lors du chargement des produits';
           }
