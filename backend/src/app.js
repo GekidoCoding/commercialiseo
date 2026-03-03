@@ -25,14 +25,29 @@ app.use(helmet({
   contentSecurityPolicy: false,
 }));
 
-// CORS configuration
+// CORS configurationconst 
+allowedOrigins = [
+  "http://localhost:4200",
+  "https://commercialiseogekidoclone.vercel.app"
+];
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:4200' || 'https://commercialiseogekidoclone.vercel.app',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Compression
 app.use(compression());
