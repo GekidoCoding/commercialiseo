@@ -216,7 +216,7 @@ L'équipe Commercialiseo`;
       </div>
     `;
 
-    return this.sendWithResend({ to: email, subject, text, html });
+    return this.sendEmail({ to: email, subject, text, html });
   }
 
   /**
