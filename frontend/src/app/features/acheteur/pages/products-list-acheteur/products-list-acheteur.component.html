@@ -1,0 +1,291 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+
+    <div class="results-count" *ngIf="!isLoading">
+
+      <span class="count-label"><span class="count-value">{{ getTotalVariantsCount() }}</span> produits disponibles</span>
+    </div>
+  </div>
+
+  <!-- Barre de recherche et actions -->
+  <div class="search-section">
+    <div class="search-bar-container">
+      <div class="search-box-large">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher un produit, une catégorie, une référence..."
+          [value]="searchTerm"
+          (input)="onSearchInput($event)">
+        <button
+          class="btn-clear-search"
+          *ngIf="searchTerm"
+          (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <button
+        class="btn-toggle-filters"
+        [class.active]="showFilters"
+        (click)="toggleFilters()">
+        <i class="fas fa-sliders-h"></i>
+        <span>Filtres</span>
+        <span class="filter-badge" *ngIf="getActiveFiltersCount() > 0">{{ getActiveFiltersCount() }}</span>
+      </button>
+    </div>
+
+    <!-- Pré-définitions -->
+    <div class="presets-bar">
+      <button
+        class="preset-btn"
+        [class.active]="activePreset === 'match'"
+        (click)="setPreset('match')">
+        <i class="fas fa-bullseye"></i>
+        Meilleure correspondance
+      </button>
+      <button
+        class="preset-btn"
+        [class.active]="activePreset === 'bestseller'"
+        (click)="setPreset('bestseller')">
+        <i class="fas fa-fire"></i>
+        Meilleures ventes
+      </button>
+      <button
+        class="preset-btn"
+        [class.active]="activePreset === 'price'"
+        (click)="setPreset('price')">
+        <i class="fas fa-sort-amount-down"></i>
+        Tri par prix
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres avancés -->
+  <div class="filters-panel" *ngIf="showFilters" [@slideToggle]>
+    <div class="filters-header">
+      <h3><i class="fas fa-filter"></i> Filtres avancés</h3>
+      <button class="btn-clear-filters" (click)="clearAllFilters()" *ngIf="hasActiveFilters()">
+        <i class="fas fa-trash-alt"></i> Réinitialiser
+      </button>
+    </div>
+
+    <div class="filters-grid">
+      <!-- Filtre par catégorie -->
+      <div class="filter-group">
+        <label>Catégorie</label>
+        <select [(ngModel)]="filters.category" (change)="onFilterChange()">
+          <option value="">Toutes les catégories</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <!-- Filtre par prix -->
+      <div class="filter-group price-group">
+        <label>Fourchette de prix</label>
+        <div class="price-inputs">
+          <input
+            type="number"
+            placeholder="Min Ar"
+            [(ngModel)]="filters.minPrice"
+            (change)="onFilterChange()">
+          <span class="price-separator">-</span>
+          <input
+            type="number"
+            placeholder="Max Ar"
+            [(ngModel)]="filters.maxPrice"
+            (change)="onFilterChange()">
+        </div>
+      </div>
+
+      <!-- Filtres checkbox -->
+      <div class="filter-group checkbox-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="filters.inStockOnly"
+            (change)="onFilterChange()">
+          <span class="checkmark"></span>
+          <span class="label-text">En stock uniquement</span>
+        </label>
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="filters.hasPromotionOnly"
+            (change)="onFilterChange()">
+          <span class="checkmark"></span>
+          <span class="label-text">Promotions en cours</span>
+        </label>
+      </div>
+
+      <!-- Filtres par attributs -->
+      <div class="filter-group attributes-group" *ngIf="filters.attributes.length > 0">
+        <label>Attributs spécifiques</label>
+        <div class="attribute-filters">
+          <div class="attr-filter-row" *ngFor="let attr of filters.attributes; let i = index">
+            <input
+              type="text"
+              placeholder="Clé (ex: couleur)"
+              [(ngModel)]="attr.key"
+              (change)="onFilterChange()">
+            <input
+              type="text"
+              placeholder="Valeur"
+              [(ngModel)]="attr.value"
+              (change)="onFilterChange()">
+            <button class="btn-remove-attr" (click)="removeAttributeFilter(i)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-add-attr" (click)="addAttributeFilter()">
+      <i class="fas fa-plus"></i> Ajouter un filtre par attribut
+    </button>
+  </div>
+
+  <!-- État de chargement -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="skeleton-grid">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line small"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- État vide -->
+  <div class="empty-state" *ngIf="!isLoading && filteredProducts.length === 0">
+    <div class="empty-icon">
+      <i class="fas fa-search"></i>
+    </div>
+    <h3>Aucun produit trouvé</h3>
+    <p>Essayez de modifier vos critères de recherche ou de filtrage</p>
+    <button class="btn btn-primary" (click)="clearAllFilters()">
+      <i class="fas fa-undo"></i> Réinitialiser les filtres
+    </button>
+  </div>
+
+  <!-- Grille de produits -->
+  <div class="products-grid" *ngIf="!isLoading && filteredProducts.length > 0">
+
+    <!-- Pour chaque produit -->
+    <ng-container *ngFor="let product of filteredProducts; trackBy: trackByProductId">
+
+      <!-- Card pour chaque variant -->
+      <div class="product-card" *ngFor="let variant of product.variants; trackBy: trackByVariantId">
+
+        <!-- Badge promotion -->
+        <div class="promo-badge-card" *ngIf="getActivePromotion(variant) as promo">
+          <span class="promo-value" *ngIf="promo.typePromotion === 'REMISE'">-{{ promo.value }}%</span>
+          <span class="promo-value" *ngIf="promo.typePromotion !== 'REMISE'">-{{ promo.value }}Ar</span>
+        </div>
+
+        <!-- Badge main variant -->
+        <div class="main-badge-card" *ngIf="variant.isMain">
+          <i class="fas fa-star"></i>
+        </div>
+
+        <!-- Image -->
+        <div class="card-image-wrapper">
+          <img
+            [src]="getMainImage(variant)"
+            [alt]="product.product.name"
+            class="card-image">
+
+          <!-- Overlay promotion -->
+          <div class="promo-overlay" *ngIf="getActivePromotion(variant)">
+            <div class="promo-timer">
+              <i class="fas fa-clock"></i>
+              <span>{{ getPromotionEndTime(variant) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenu -->
+        <div class="card-content">
+          <!-- Catégorie -->
+          <div class="card-category" *ngIf="product.category">
+            {{ typeof product.category === 'object' ? product.category.name : product.category }}
+          </div>
+
+          <!-- Nom du produit -->
+          <h3 class="card-title">{{ product.product.name }}</h3>
+
+          <!-- Code variant -->
+          <div class="card-code">
+            <i class="fas fa-barcode"></i>
+            <span>{{ variant.code }}</span>
+          </div>
+
+          <!-- Attributs -->
+          <div class="card-attributes" *ngIf="getVariantAttributes(variant).length > 0">
+            <span
+              class="attr-tag"
+              *ngFor="let attr of getVariantAttributes(variant).slice(0, 3)">
+              {{ attr.key }}: {{ attr.value }}
+            </span>
+            <span class="attr-more" *ngIf="getVariantAttributes(variant).length > 3">
+              +{{ getVariantAttributes(variant).length - 3 }}
+            </span>
+          </div>
+
+          <!-- Prix -->
+          <div class="card-pricing">
+            <div class="price-container">
+              <span class="current-price" [class.has-promo]="getActivePromotion(variant)">
+                {{ getEffectivePrice(variant) | number:'1.0-0' }} <strong>MGA</strong>
+              </span>
+              <span class="original-price" *ngIf="getActivePromotion(variant)">
+                {{ variant.price | number:'1.0-0' }} <strong>MGA</strong>
+              </span>
+            </div>
+            <div class="stock-status" [class]="getStockStatusClass(getAvailableStock(variant))">
+              <i class="fas" [class]="getStockIcon(getAvailableStock(variant))"></i>
+              <span>{{ getStockLabel(getAvailableStock(variant)) }}</span>
+            </div>
+          </div>
+
+          <!-- Date fin promotion -->
+          <div class="promo-end-date" *ngIf="getActivePromotion(variant) as promo">
+            <i class="fas fa-hourglass-end"></i>
+            <span>Se termine le {{ promo.dateEnd | date:'dd/MM/yyyy à HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <div class="quantity-input-wrapper" *ngIf="getAvailableStock(variant) > 0">
+            <input
+              type="number"
+              class="quantity-input"
+              [value]="getVariantQuantity(variant)"
+              (input)="updateVariantQuantity(variant, $event)"
+              min="0"
+              [max]="getAvailableStock(variant) + getVariantQuantity(variant)"
+              placeholder="Qté">
+          </div>
+          <button
+            class="btn-add-cart"
+            [disabled]="isAddToCartDisabled(variant)"
+            (click)="addToCart(product, variant)">
+            <i class="fas" [class.fa-shopping-cart]="getAvailableStock(variant) > 0" [class.fa-times]="getAvailableStock(variant) <= 0"></i>
+            <span>{{ getAvailableStock(variant) > 0 ? 'Ajouter' : 'Rupture' }}</span>
+          </button>
+          <button class="btn-wishlist">
+            <i class="far fa-heart"></i>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

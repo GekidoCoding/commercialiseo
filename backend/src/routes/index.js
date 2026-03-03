@@ -10,6 +10,7 @@ const authRoutes = require('./authRoutes');
 const adminRoutes = require('./adminRoutes');
 const publicRoutes = require('./publicRoutes');
 const boutiqueRoutes = require('./boutiqueRoutes');
+const acheteurRoutes = require('./acheteurRoutes');
 
 // Health check
 router.get('/health', (req, res) => {
@@ -26,5 +27,6 @@ router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/public', publicRoutes);
 router.use('/boutique', boutiqueRoutes);
+router.use('/acheteur', acheteurRoutes);
 
 module.exports = router;

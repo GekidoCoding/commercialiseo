@@ -406,11 +406,11 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       case PromotionType.REMISE:
         return `-${promo.value}%`;
       case PromotionType.PRICE:
-        return `${promo.value}€`; // Prix fixe
+        return `${promo.value}Ar`; // Prix fixe
       case PromotionType.DISCOUNT:
-        return `-${promo.value}€`; // Remise fixe avec moins
+        return `-${promo.value}Ar`; // Remise fixe avec moins
       default:
-        return `-${promo.value}€`;
+        return `-${promo.value}Ar`;
     }
   }
 

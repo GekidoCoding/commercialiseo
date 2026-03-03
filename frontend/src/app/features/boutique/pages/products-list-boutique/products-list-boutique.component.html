@@ -318,10 +318,10 @@
                       <td>
                         <div class="prix-container">
                           <span class="prix-original" *ngIf="hasActivePromotion(variant)">
-                            {{ variant.price | currency:'EUR' }}
+                            {{ variant.price | currency:'MGA' }}
                           </span>
                           <span class="prix-effectif" [class.promo]="hasActivePromotion(variant)">
-                            {{ getPrixEffectif(variant) | currency:'EUR' }}
+                            {{ getPrixEffectif(variant) | currency:'MGA' }}
                           </span>
                         </div>
                       </td>

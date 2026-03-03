@@ -57,7 +57,7 @@
                 Prix de base
               </label>
               <div class="readonly-value">
-                <span class="price-chip">{{ variant.price | currency:'EUR' }}</span>
+                <span class="price-chip">{{ variant.price | currency:'MGA' }}</span>
                 <i class="fas fa-lock readonly-lock"></i>
               </div>
             </div>
@@ -103,7 +103,7 @@
                          (change)="calculerApercu()">
                   <span class="type-icon"><i class="fas fa-euro-sign"></i></span>
                   <span class="type-label">Prix fixe</span>
-                  <span class="type-example">Ex : 15€</span>
+                  <span class="type-example">Ex : 15Ar</span>
                 </label>
                 <label class="type-option" [class.selected]="promotionForm.typePromotion === PromotionType.DISCOUNT">
                   <input type="radio"
@@ -114,7 +114,7 @@
                          (change)="calculerApercu()">
                   <span class="type-icon"><i class="fas fa-minus-circle"></i></span>
                   <span class="type-label">Remise fixe</span>
-                  <span class="type-example">Ex : -5€</span>
+                  <span class="type-example">Ex : -5Ar</span>
                 </label>
               </div>
             </div>
@@ -144,7 +144,7 @@
                    [class.fa-percent]="promotionForm.typePromotion === PromotionType.REMISE"
                    [class.fa-euro-sign]="promotionForm.typePromotion !== PromotionType.REMISE"></i>
                 <span class="input-suffix">
-                  {{ promotionForm.typePromotion === PromotionType.REMISE ? '%' : '€' }}
+                  {{ promotionForm.typePromotion === PromotionType.REMISE ? '%' : 'Ar' }}
                 </span>
               </div>
               <div class="invalid-feedback" *ngIf="promotionForm.value === null || promotionForm.value <= 0">
@@ -160,13 +160,13 @@
               <div class="price-preview-inner">
                 <i class="fas fa-eye"></i>
                 <span class="preview-label">Prix après réduction :</span>
-                <span class="preview-original">{{ variant.price | currency:'EUR' }}</span>
+                <span class="preview-original">{{ variant.price | currency:'MGA' }}</span>
                 <i class="fas fa-arrow-right preview-arrow"></i>
-                <span class="preview-new">{{ prixAvecPromo | currency:'EUR' }}</span>
+                <span class="preview-new">{{ prixAvecPromo | currency:'MGA' }}</span>
                 <span class="preview-economy">
                   - {{ promotionForm.typePromotion === PromotionType.REMISE
                   ? promotionForm.value + ' %'
-                  : (promotionForm.value | currency:'EUR') + ' (remise fixe)' }}
+                  : (promotionForm.value | currency:'MGA') + ' (remise fixe)' }}
                 </span>
               </div>
             </div>

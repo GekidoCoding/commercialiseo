@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import {AuthUtilService} from '../../services/auth-util.service';
 
 @Component({
   selector: 'app-footer',
@@ -14,8 +15,14 @@ export class FooterComponent implements OnInit {
 
   currentYear: number = new Date().getFullYear();
   newsletterEmail: string = '';
-
-  ngOnInit(): void {}
+  role:string = '';
+  constructor(
+    private authUtilService:AuthUtilService
+  ) {
+  }
+  ngOnInit(): void {
+    this.role=this.authUtilService.getRole();
+  }
 
   subscribeNewsletter(): void {
     if (!this.newsletterEmail || !this.validateEmail(this.newsletterEmail)) {

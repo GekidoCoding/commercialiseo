@@ -7,6 +7,7 @@ import {Product} from '../model/product';
 import {catchError} from 'rxjs/operators';
 import {throwError} from 'rxjs';
 import {Category} from '../model/category';
+import {ProductRead} from '../model/product-read';
 @Injectable({
   providedIn: 'root',
 })
