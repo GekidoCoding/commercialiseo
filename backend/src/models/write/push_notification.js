@@ -13,8 +13,9 @@ const pushNotificationsSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'CategoryNotification',
         },
+
     },
-    { timestamps: false }
+    { timestamps: { createdAt: 'createdAt', updatedAt: false } }
 );
 
 module.exports = mongoose.model('PushNotifications', pushNotificationsSchema);
