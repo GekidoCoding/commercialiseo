@@ -35,7 +35,8 @@ const startServer = async () => {
       console.log(`📁 Environnement: ${process.env.NODE_ENV || 'development'}`);
 
       console.log(`email.env success: ${process.env.EMAIL_USER}`);
-      
+      console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+
     });
 
     // Gestion gracieuse de l'arrêt
