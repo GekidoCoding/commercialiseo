@@ -102,7 +102,7 @@ class EmailService {
    * @returns {Promise<Object>} Résultat de l'envoi
    */
   async sendEmail({ to, subject, text, html }) {
-    if (!this.transporter) {
+    /*if (!this.transporter) {
       throw new ApiError(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
         'Service email non configuré'
@@ -134,7 +134,7 @@ class EmailService {
         HTTP_STATUS.BAD_REQUEST,
         AUTH_MESSAGES.EMAIL_SEND_ERROR
       );
-    }
+    }*/
   }
 
   /**
@@ -144,7 +144,7 @@ class EmailService {
    * @param {number} [expiresInMinutes=4] - Durée de validité en minutes
    */
   async sendVerificationCode(email, code, expiresInMinutes = 4) {
-    const subject = 'Code de vérification - Commercialiseo';
+    /*const subject = 'Code de vérification - Commercialiseo';
     const text = `Bonjour,
 
 Votre code de vérification est : ${code}
@@ -171,7 +171,7 @@ L'équipe Commercialiseo`;
       </div>
     `;
 
-    return this.sendEmail({ to: email, subject, text, html });
+    return this.sendEmail({ to: email, subject, text, html });*/
   }
 
   /**
@@ -220,7 +220,7 @@ L'équipe Commercialiseo`;
    * @param {string} username - Nom d'utilisateur
    */
   async sendWelcomeEmail(email, username) {
-    const subject = 'Bienvenue sur Commercialiseo !';
+    /*const subject = 'Bienvenue sur Commercialiseo !';
     const text = `Bonjour ${username},
 
 Bienvenue sur Commercialiseo ! Votre compte a été créé avec succès.
@@ -252,7 +252,7 @@ L'équipe Commercialiseo`;
     `;
 
     return this.sendEmail({ to: email, subject, text, html });
-  }
+  }*/
 }
 
 // Exporte une instance singleton
