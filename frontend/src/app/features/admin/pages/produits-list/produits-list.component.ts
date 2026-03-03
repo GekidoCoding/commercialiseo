@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProduitsAddFormComponent } from '../../components/produit/produits-add-form/produits-add-form.component';
 import { AdminService } from '../../services/admin.service';
-import { finalize } from 'rxjs/operators';
 import {ProductRead} from '../../../../shared/model/product-read';
 
 interface StatsAdmin {

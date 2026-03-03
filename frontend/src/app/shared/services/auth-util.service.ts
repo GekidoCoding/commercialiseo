@@ -69,7 +69,9 @@ export class AuthUtilService {
       return null;
     }
   }
-
+  getRole(){
+    return this.getUserFromStorage()?.role || '';
+  }
   /**
    * Vérifie si le token est valide via verifyToken
    */

@@ -1,33 +1,10 @@
 <!-- Navbar principale -->
 <header class="navbar" [class.scrolled]="isScrolled()">
   <div class="navbar-inner">
-    <!-- ── Barre de recherche (toutes tailles) ── -->
-
-    <div class="search-wrapper" [class.focused]="searchFocused">
-      <i class="fas fa-search search-icon"></i>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Rechercher un produit, boutique…"
-        [(ngModel)]="searchQuery"
-        (focus)="searchFocused = true"
-        (blur)="searchFocused = false"
-        (keydown.escape)="searchQuery = ''; searchFocused = false"
-        aria-label="Recherche"
-      />
-      <button
-        class="search-clear"
-        *ngIf="searchQuery.length > 0"
-        (click)="searchQuery = ''"
-        aria-label="Effacer">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-
 
     <!-- ── Actions Desktop (Panier, Notifs, Profil) ── -->
     <div class="nav-actions desktop-only">
+
       <!-- Panier -->
       <div class="action-wrapper">
         <button class="nav-action-btn" (click)="toggleCart($event)" [class.active]="cartOpen()" aria-label="Panier">
@@ -37,10 +14,20 @@
           </span>
         </button>
 
+        <!-- Panel Panier -->
         <div class="dropdown-panel cart-panel" [class.open]="cartOpen()">
           <div class="panel-header">
             <span class="panel-title"><i class="fas fa-shopping-cart"></i> Mon Panier</span>
-            <span class="panel-count">{{ cartCount() }} article(s)</span>
+            <div class="panel-header-actions">
+              <span class="panel-count">{{ cartCount() }} commande(s)</span>
+              <button
+                class="btn-edit-cart"
+                (click)="toggleEditMode($event)"
+                [class.active]="cartEditMode"
+                [title]="cartEditMode ? 'Terminer l\'édition' : 'Modifier le panier'">
+                <i class="fas" [class.fa-edit]="!cartEditMode" [class.fa-check]="cartEditMode"></i>
+              </button>
+            </div>
           </div>
 
           <div class="panel-body">
@@ -48,27 +35,80 @@
               <span class="empty-icon">🛒</span>
               <p>Votre panier est vide</p>
             </div>
+
             <ul *ngIf="cartItems.length > 0" class="cart-list">
-              <li *ngFor="let item of cartItems" class="cart-item">
-                <span class="cart-img">{{ item.img }}</span>
-                <div class="cart-info">
-                  <span class="cart-name">{{ item.name }}</span>
-                  <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} </span>
+              <li *ngFor="let item of cartItems" class="cart-item-row">
+
+                <!-- Image -->
+                <div class="cart-item-img">
+                  <img
+                    [src]="getCartItemImage(item)"
+                    [alt]="item.productName"
+                    class="cart-thumb"
+                    (error)="onImgError($event)">
                 </div>
-                <button class="cart-remove" (click)="removeFromCart(item.id)" aria-label="Supprimer">
-                  <i class="fas fa-times"></i>
-                </button>
+
+                <!-- Infos -->
+                <div class="cart-item-info">
+                  <span class="cart-item-name">{{ item.productName }}</span>
+                  <span class="cart-item-code">
+                    <i class="fas fa-barcode"></i> {{ item.variant.code }}
+                  </span>
+                  <span class="cart-item-attrs" *ngIf="getCartItemAttrs(item).length > 0">
+                    <span *ngFor="let attr of getCartItemAttrs(item).slice(0, 2)" class="attr-chip">
+                      {{ attr.key }}: {{ attr.value }}
+                    </span>
+                  </span>
+                </div>
+
+                <!-- Qté + sous-total -->
+                <div class="cart-item-right">
+                  <!-- Lecture -->
+                  <ng-container *ngIf="!cartEditMode">
+                    <span class="cart-item-qty">× {{ item.quantity }}</span>
+                    <span class="cart-item-subtotal">
+                      {{ getItemSubtotal(item) | number:'1.0-0' }} <small>MGA</small>
+                    </span>
+                  </ng-container>
+
+                  <!-- Édition -->
+                  <ng-container *ngIf="cartEditMode">
+                    <div class="cart-qty-editor">
+                      <button class="qty-btn" (click)="decrementCartQty(item, $event)">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <input
+                        type="number"
+                        class="qty-input"
+                        [value]="item.quantity"
+                        (change)="onCartQtyChange(item, $event)"
+                        min="1"
+                        [max]="item.variant.stock + item.quantity">
+                      <button class="qty-btn" (click)="incrementCartQty(item, $event)">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <span class="cart-item-subtotal edit-mode">
+                      {{ getItemSubtotal(item) | number:'1.0-0' }} <small>MGA</small>
+                    </span>
+                    <button class="btn-remove-cart-item" (click)="removeCartItem(item, $event)" title="Supprimer">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </ng-container>
+                </div>
+
               </li>
             </ul>
           </div>
 
           <div class="panel-footer" *ngIf="cartItems.length > 0">
-            <div class="cart-total">
-              <span>Total</span>
-              <strong>{{ cartTotal | number:'1.2-2' }} </strong>
+            <div class="cart-total-row">
+              <span class="cart-total-label">Total commande</span>
+              <strong class="cart-total-amount">{{ cartGrandTotal | number:'1.0-0' }} MGA</strong>
             </div>
-            <button class="btn-checkout" routerLink="/panier" (click)="cartOpen.set(false)">
-              <i class="fas fa-lock"></i> Passer commande
+            <button class="btn-see-more" (click)="openOrderConfirmation($event)">
+              <i class="fas fa-clipboard-check"></i>
+              Confirmer la commande
             </button>
           </div>
         </div>
@@ -90,7 +130,6 @@
               Tout marquer lu
             </button>
           </div>
-
           <div class="panel-body">
             <ul class="notif-list">
               <li *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
@@ -103,7 +142,6 @@
               </li>
             </ul>
           </div>
-
           <div class="panel-footer">
             <a routerLink="/notifications" class="see-all" (click)="notifOpen.set(false)">
               Voir toutes les notifications <i class="fas fa-arrow-right"></i>
@@ -111,20 +149,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Profil Desktop -->
+      <div class="action-wrapper">
+        <div class="nav-profile" (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
+          <span class="profile-name">{{ userConnected?.username }}</span>
+          <span class="profile-avatar">{{ getUserInitials() }}</span>
+        </div>
+        <div class="dropdown-panel user-panel" [class.open]="userMenuOpen()">
+          <div class="user-panel-top">
+            <div class="user-avatar-lg">{{ getUserInitials() }}</div>
+            <div class="user-panel-info">
+              <strong>{{ userConnected?.username }}</strong>
+              <span>{{ userConnected?.email }}</span>
+              <span class="role-badge">{{ userConnected?.role }}</span>
+            </div>
+          </div>
+          <ul class="user-menu-list">
+            <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>
+            <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>
+          </ul>
+          <div class="user-panel-footer">
+            <button class="logout-btn" (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- ── Profil Mobile uniquement ── -->
-    <div class="nav-profile mobile-only" (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
-      <span class="profile-name">{{ userConnected.username }}</span>
+    <!-- ── Profil Mobile ── -->
+    <div class="nav-profile mobile-only" *ngIf="isMobile()"  (click)="toggleUserMenu($event)" [class.active]="userMenuOpen()">
       <span class="profile-avatar">{{ getUserInitials() }}</span>
-
       <div class="dropdown-panel user-panel" [class.open]="userMenuOpen()">
         <div class="user-panel-top">
           <div class="user-avatar-lg">{{ getUserInitials() }}</div>
           <div class="user-panel-info">
-            <strong>{{ userConnected.username }}</strong>
-            <span>{{ userConnected.email }}</span>
-            <span class="role-badge">{{ userConnected.role }}</span>
+            <strong>{{ userConnected?.username }}</strong>
+            <span>{{ userConnected?.email }}</span>
+            <span class="role-badge">{{ userConnected?.role }}</span>
           </div>
         </div>
         <ul class="user-menu-list">
@@ -138,51 +202,51 @@
         </div>
       </div>
     </div>
+
   </div>
 
-
+  <!-- Menu Mobile dépliable -->
+  <nav class="mobile-nav" [class.open]="mobileNavOpen()">
+    <a class="mobile-link" routerLink="/accueil"  routerLinkActive="active" (click)="mobileNavOpen.set(false)">
+      <i class="fas fa-house"></i> Accueil
+    </a>
+    <a class="mobile-link" routerLink="/boutique" routerLinkActive="active" (click)="mobileNavOpen.set(false)">
+      <i class="fas fa-store"></i> Boutique
+    </a>
+    <a class="mobile-link" routerLink="/messages" routerLinkActive="active" (click)="mobileNavOpen.set(false)">
+      <i class="fas fa-message"></i> Messages
+    </a>
+    <hr class="mobile-divider" />
+    <button class="mobile-logout" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </button>
+  </nav>
 </header>
 
-<!-- Navigation Mobile Fixe en Bas avec Notifications et Panier -->
+<!-- Navigation Mobile Fixe en Bas -->
 <nav class="mobile-nav-bottom" *ngIf="isMobile()">
-  <!-- Barre secondaire avec Notifications et Panier -->
   <div class="mobile-nav-secondary">
-
-    <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
+    <button class="secondary-btn" routerLink="/accueil" [class.active]="isActive('/accueil')">
       <i class="fas fa-house"></i>
     </button>
-
-    <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
+    <button class="secondary-btn" routerLink="/messages" [class.active]="isActive('/messages')">
       <i class="fas fa-message"></i>
-      <span class="badge badge-red" *ngIf="notifCount() > 0">
-        {{ notifCount() > 9 ? '9+' : notifCount() }}
-      </span>
     </button>
-
     <button class="secondary-btn" (click)="toggleNotif($event)" [class.active]="notifOpen()">
       <i class="fas fa-bell"></i>
-      <span class="badge badge-red" *ngIf="notifCount() > 0">
-        {{ notifCount() > 9 ? '9+' : notifCount() }}
-      </span>
+      <span class="badge badge-red" *ngIf="notifCount() > 0">{{ notifCount() > 9 ? '9+' : notifCount() }}</span>
     </button>
-
     <button class="secondary-btn" (click)="toggleCart($event)" [class.active]="cartOpen()">
       <i class="fas fa-shopping-cart"></i>
-      <span class="badge badge-green" *ngIf="cartCount() > 0">
-        {{ cartCount() > 9 ? '9+' : cartCount() }}
-      </span>
+      <span class="badge badge-green" *ngIf="cartCount() > 0">{{ cartCount() > 9 ? '9+' : cartCount() }}</span>
     </button>
   </div>
 
-  <!-- Dropdown Panels pour mobile (positionnés au-dessus) -->
   <div class="mobile-dropdown-container">
-    <!-- Panel Notifications -->
     <div class="dropdown-panel notif-panel mobile-positioned" [class.open]="notifOpen()">
       <div class="panel-header">
         <span class="panel-title"><i class="fas fa-bell"></i> Notifications</span>
-        <button class="mark-read-btn" (click)="markAllRead()" *ngIf="notifCount() > 0">
-          Tout marquer lu
-        </button>
+        <button class="mark-read-btn" (click)="markAllRead()" *ngIf="notifCount() > 0">Tout marquer lu</button>
       </div>
       <div class="panel-body">
         <ul class="notif-list">
@@ -203,11 +267,15 @@
       </div>
     </div>
 
-    <!-- Panel Panier -->
     <div class="dropdown-panel cart-panel mobile-positioned" [class.open]="cartOpen()">
       <div class="panel-header">
         <span class="panel-title"><i class="fas fa-shopping-cart"></i> Mon Panier</span>
-        <span class="panel-count">{{ cartCount() }} article(s)</span>
+        <div class="panel-header-actions">
+          <span class="panel-count">{{ cartCount() }} commande(s)</span>
+          <button class="btn-edit-cart" (click)="toggleEditMode($event)" [class.active]="cartEditMode">
+            <i class="fas" [class.fa-edit]="!cartEditMode" [class.fa-check]="cartEditMode"></i>
+          </button>
+        </div>
       </div>
       <div class="panel-body">
         <div *ngIf="cartItems.length === 0" class="panel-empty">
@@ -215,27 +283,175 @@
           <p>Votre panier est vide</p>
         </div>
         <ul *ngIf="cartItems.length > 0" class="cart-list">
-          <li *ngFor="let item of cartItems" class="cart-item">
-            <span class="cart-img">{{ item.img }}</span>
-            <div class="cart-info">
-              <span class="cart-name">{{ item.name }}</span>
-              <span class="cart-meta">Qté : {{ item.qty }} · {{ item.price | number:'1.2-2' }} </span>
+          <li *ngFor="let item of cartItems" class="cart-item-row">
+            <div class="cart-item-img">
+              <img [src]="getCartItemImage(item)" [alt]="item.productName" class="cart-thumb" (error)="onImgError($event)">
             </div>
-            <button class="cart-remove" (click)="removeFromCart(item.id)" aria-label="Supprimer">
-              <i class="fas fa-times"></i>
-            </button>
+            <div class="cart-item-info">
+              <span class="cart-item-name">{{ item.productName }}</span>
+              <span class="cart-item-code"><i class="fas fa-barcode"></i> {{ item.variant.code }}</span>
+            </div>
+            <div class="cart-item-right">
+              <ng-container *ngIf="!cartEditMode">
+                <span class="cart-item-qty">× {{ item.quantity }}</span>
+                <span class="cart-item-subtotal">{{ getItemSubtotal(item) | number:'1.0-0' }} <small>MGA</small></span>
+              </ng-container>
+              <ng-container *ngIf="cartEditMode">
+                <div class="cart-qty-editor">
+                  <button class="qty-btn" (click)="decrementCartQty(item, $event)"><i class="fas fa-minus"></i></button>
+                  <input type="number" class="qty-input" [value]="item.quantity" (change)="onCartQtyChange(item, $event)" min="1">
+                  <button class="qty-btn" (click)="incrementCartQty(item, $event)"><i class="fas fa-plus"></i></button>
+                </div>
+                <span class="cart-item-subtotal edit-mode">{{ getItemSubtotal(item) | number:'1.0-0' }} <small>MGA</small></span>
+                <button class="btn-remove-cart-item" (click)="removeCartItem(item, $event)"><i class="fas fa-trash-alt"></i></button>
+              </ng-container>
+            </div>
           </li>
         </ul>
       </div>
       <div class="panel-footer" *ngIf="cartItems.length > 0">
-        <div class="cart-total">
-          <span>Total</span>
-          <strong>{{ cartTotal | number:'1.2-2' }} </strong>
+        <div class="cart-total-row">
+          <span class="cart-total-label">Total commande</span>
+          <strong class="cart-total-amount">{{ cartGrandTotal | number:'1.0-0' }} MGA</strong>
         </div>
-        <button class="btn-checkout" routerLink="/panier" (click)="cartOpen.set(false)">
-          <i class="fas fa-lock"></i> Passer commande
+        <button class="btn-see-more" (click)="openOrderConfirmation($event)">
+          <i class="fas fa-clipboard-check"></i> Confirmer la commande
         </button>
       </div>
     </div>
   </div>
 </nav>
+
+<!-- ══════════════════════════════════════════
+     MODAL CONFIRMATION DE COMMANDE
+══════════════════════════════════════════ -->
+<div class="order-modal-overlay" *ngIf="orderModalOpen" (click)="closeOrderModal()">
+  <div class="order-modal" (click)="$event.stopPropagation()">
+
+    <div class="order-modal-header">
+      <div class="order-modal-title">
+        <i class="fas fa-clipboard-check"></i>
+        <span>{{ orderConfirmStep === 'review' ? 'Récapitulatif de commande' : 'Confirmer votre identité' }}</span>
+      </div>
+      <button class="order-modal-close" (click)="closeOrderModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Étape 1 : Récapitulatif -->
+    <div class="order-modal-body" *ngIf="orderConfirmStep === 'review'">
+
+      <!-- Bouton bascule édition -->
+      <div class="review-edit-bar">
+    <span class="review-edit-hint" *ngIf="!reviewEditMode">
+      <i class="fas fa-info-circle"></i> Vérifiez votre commande avant de continuer
+    </span>
+        <span class="review-edit-hint active" *ngIf="reviewEditMode">
+      <i class="fas fa-pencil-alt"></i> Mode édition actif
+    </span>
+        <button class="btn-review-edit" (click)="reviewEditMode = !reviewEditMode" [class.active]="reviewEditMode">
+          <i class="fas" [class.fa-edit]="!reviewEditMode" [class.fa-check]="reviewEditMode"></i>
+          {{ reviewEditMode ? 'Terminer' : 'Modifier' }}
+        </button>
+      </div>
+
+      <div class="order-review-list">
+        <div class="order-review-item" *ngFor="let item of cartItems">
+          <div class="order-review-img">
+            <img [src]="getCartItemImage(item)" [alt]="item.productName" (error)="onImgError($event)">
+          </div>
+          <div class="order-review-details">
+            <span class="order-review-name">{{ item.productName }}</span>
+            <span class="order-review-code"><i class="fas fa-barcode"></i> {{ item.variant.code }}</span>
+            <span class="order-review-attrs" *ngIf="getCartItemAttrs(item).length > 0">
+          <span *ngFor="let attr of getCartItemAttrs(item).slice(0, 3)" class="attr-chip-sm">
+            {{ attr.key }}: {{ attr.value }}
+          </span>
+        </span>
+          </div>
+          <div class="order-review-price">
+
+            <!-- Lecture seule -->
+            <ng-container *ngIf="!reviewEditMode">
+              <span class="order-review-qty">{{ item.quantity }} ×</span>
+              <span class="order-review-unit">{{ getItemEffectivePrice(item) | number:'1.0-0' }} MGA</span>
+              <strong class="order-review-subtotal">= {{ getItemSubtotal(item) | number:'1.0-0' }} MGA</strong>
+            </ng-container>
+
+            <!-- Mode édition -->
+            <ng-container *ngIf="reviewEditMode">
+              <div class="cart-qty-editor">
+                <button class="qty-btn" (click)="decrementCartQty(item, $event)">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <input
+                  type="number"
+                  class="qty-input"
+                  [value]="item.quantity"
+                  (change)="onCartQtyChange(item, $event)"
+                  min="1"
+                  [max]="item.variant.stock + item.quantity">
+                <button class="qty-btn" (click)="incrementCartQty(item, $event)">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+              <strong class="order-review-subtotal">{{ getItemSubtotal(item) | number:'1.0-0' }} MGA</strong>
+              <button class="btn-remove-cart-item" (click)="removeCartItem(item, $event)" title="Supprimer">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="order-review-total">
+        <span>Total de la commande</span>
+        <strong>{{ cartGrandTotal | number:'1.0-0' }} MGA</strong>
+      </div>
+    </div>
+
+    <!-- Étape 2 : Mot de passe -->
+    <div class="order-modal-body" *ngIf="orderConfirmStep === 'password'">
+      <div class="password-confirm-wrapper">
+        <div class="password-confirm-icon">
+          <i class="fas fa-lock"></i>
+        </div>
+        <p class="password-confirm-text">
+          Veuillez saisir votre mot de passe pour valider la commande de
+          <strong>{{ cartGrandTotal | number:'1.0-0' }} MGA</strong>.
+        </p>
+        <div class="password-input-wrapper">
+          <i class="fas fa-key"></i>
+          <input
+            type="password"
+            class="password-input"
+            placeholder="Votre mot de passe"
+            [(ngModel)]="confirmPassword"
+            (keyup.enter)="submitOrder()">
+        </div>
+        <p class="password-error" *ngIf="passwordError">
+          <i class="fas fa-exclamation-circle"></i> {{ passwordError }}
+        </p>
+      </div>
+    </div>
+
+    <div class="order-modal-footer">
+      <button class="btn-modal-cancel" (click)="closeOrderModal()">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+      <button *ngIf="orderConfirmStep === 'review'" class="btn-modal-next" (click)="goToPasswordStep()">
+        <i class="fas fa-arrow-right"></i> Continuer
+      </button>
+      <button
+        *ngIf="orderConfirmStep === 'password'"
+        class="btn-modal-confirm"
+        (click)="submitOrder()"
+        [disabled]="!confirmPassword || isSubmittingOrder">
+        <i class="fas" [class.fa-check]="!isSubmittingOrder" [class.fa-spinner]="isSubmittingOrder" [class.fa-spin]="isSubmittingOrder"></i>
+        {{ isSubmittingOrder ? 'Validation...' : 'Valider la commande' }}
+      </button>
+    </div>
+
+  </div>
+</div>

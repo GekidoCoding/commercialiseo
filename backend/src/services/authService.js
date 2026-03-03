@@ -183,6 +183,30 @@ class AuthService {
   }
 
   /**
+   * Vérification du mot de passe utilisateur
+   */
+  async verifyPassword(userId, password) {
+    // Trouver l'utilisateur avec son mot de passe
+    const user = await User.findById(userId).select('+password');
+
+    if (!user) {
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.USER_NOT_FOUND);
+    }
+
+    // Vérifier le mot de passe avec bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.PASSWORD_INCORRECT);
+    }
+
+    return {
+      message: AUTH_MESSAGES.PASSWORD_VALID,
+      valid: true
+    };
+  }
+
+  /**
    * Connexion utilisateur
    */
   async login(email, password) {

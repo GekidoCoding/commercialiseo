@@ -9,12 +9,16 @@ const pushNotificationsSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
-        categoryNotifId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'CategoryNotification',
+        category: {
+            type: String,
         },
+        isRead: {
+            type: Boolean,
+            default: false,
+        },
+
     },
-    { timestamps: false }
+    { timestamps: { createdAt: 'createdAt', updatedAt: false } }
 );
 
 module.exports = mongoose.model('PushNotifications', pushNotificationsSchema);
