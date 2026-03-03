@@ -10,7 +10,7 @@ import {environment} from '../../../../environments/environment';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl+'api/auth'; // Remplacez par l'URL de votre backend si différent
+  private apiUrl = environment.apiUrl+'/api/auth'; // Remplacez par l'URL de votre backend si différent
 
   constructor(private http: HttpClient) {}
 

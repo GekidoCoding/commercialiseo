@@ -138,7 +138,7 @@ class VariantService {
             };
         }
     }
-     async deleteVariant(id) {
+    async deleteVariant(id) {
         try {
             const existingVariant = await Variant.findById(id);
             const productId = existingVariant.productId;

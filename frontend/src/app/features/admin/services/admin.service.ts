@@ -11,7 +11,7 @@ import {ProductRead} from '../../../shared/model/product-read';
   providedIn: 'root',
 })
 export class AdminService {
-  private apiUrl = `${environment.apiUrl}api/admin`; // URL backend
+  private apiUrl = `${environment.apiUrl}/api/admin`; // URL backend
 
   constructor(private http: HttpClient) {}
 

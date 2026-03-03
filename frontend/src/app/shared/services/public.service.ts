@@ -11,7 +11,7 @@ import {Category} from '../model/category';
   providedIn: 'root',
 })
 export class PublicService {
-  private apiUrl = `${environment.apiUrl}api/public`; // URL backend
+  private apiUrl = `${environment.apiUrl}/api/public`; // URL backend
 
   constructor(private http: HttpClient) {}
   /**

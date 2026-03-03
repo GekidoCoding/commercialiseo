@@ -338,10 +338,10 @@
                         </div>
                       </td>
                       <td>
-                        <span class="promo-badge" *ngIf="hasActivePromotion(variant)">
+                        <span class="promo-badge" *ngIf="hasActivePromotion(variant)"
+                              [class]="getPromotionBadgeClass(getActivePromotion(variant)!)">
                           <i class="fas fa-tag"></i>
-                          {{ getActivePromotion(variant)?.value }}
-                          {{ getActivePromotion(variant)?.typePromotion === 'PERCENTAGE' ? '%' : '€' }}
+                          {{ getPromotionLabel(getActivePromotion(variant)!) }}
                         </span>
                         <span class="no-promo" *ngIf="!hasActivePromotion(variant)">-</span>
                       </td>
@@ -369,16 +369,24 @@
                             <div class="promo-item" *ngFor="let promo of variant.promotions"
                                  [class.active]="isPromotionActive(promo)">
                               <div class="promo-info">
-                                <span class="promo-value">
-                                  {{ promo.typePromotion === 'PERCENTAGE' ? '-' + promo.value + '%' : '-' + promo.value + '€' }}
+                                <span class="promo-value" [class]="getPromotionBadgeClass(promo)">
+                                  {{ getPromotionLabel(promo) }}
                                 </span>
                                 <span class="promo-dates">
                                   {{ promo.dateBegin | date:'dd/MM/yyyy' }} - {{ promo.dateEnd | date:'dd/MM/yyyy' }}
                                 </span>
                               </div>
-                              <span class="promo-status" [class.active]="isPromotionActive(promo)">
-                                {{ isPromotionActive(promo) ? 'Active' : 'Inactive' }}
-                              </span>
+                              <div class="promo-actions">
+                                <span class="promo-status" [class.active]="isPromotionActive(promo)">
+                                  {{ isPromotionActive(promo) ? 'Active' : 'Inactive' }}
+                                </span>
+                                <button class="btn-action btn-edit" (click)="openUpdatePromotionModal(promo, variant)" title="Modifier">
+                                  <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-action btn-delete" (click)="supprimerPromotion(promo._id!)" title="Supprimer">
+                                  <i class="fas fa-trash"></i>
+                                </button>
+                              </div>
                             </div>
                           </div>
                           <ng-template #noPromo>

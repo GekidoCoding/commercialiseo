@@ -6,17 +6,32 @@ import {ApiResponse} from '../../../shared/model/api-response';
 import {catchError} from 'rxjs/operators';
 import {Variant} from '../../../shared/model/Variant';
 import {ProductRead} from '../../../shared/model/product-read';
+import {Promotion} from '../../../shared/model/promotion';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoutiqueService {
-  private apiUrl = `${environment.apiUrl}api/boutique`; // URL backend
+  private apiUrl = `${environment.apiUrl}/api/boutique`; // URL backend
 
   constructor(private http: HttpClient) {}
 
+  createPromotion(data: Promotion): Observable<ApiResponse<Promotion>> {
+    return this.http.post<ApiResponse<Promotion>>(`${this.apiUrl}/create-promotion`, data)
+      .pipe(catchError(this.handleError));
+  }
 
-  // Ajouter ces méthodes dans boutique.service.ts
+
+  updatePromotion(data: Promotion): Observable<ApiResponse<Promotion>> {
+    return this.http.put<ApiResponse<Promotion>>(`${this.apiUrl}/update-promotion`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  deletePromotion(promotionId:string): Observable<ApiResponse<Promotion[]>> {
+    return this.http.delete<ApiResponse<Promotion[]>>(`${this.apiUrl}/delete-promotion/${promotionId}`)
+      .pipe(catchError(this.handleError));
+  }
+
 
   createVariantWithFiles(formData: FormData): Observable<ApiResponse<Variant>> {
     return this.http.post<ApiResponse<Variant>>(`${this.apiUrl}/create-variant`, formData)

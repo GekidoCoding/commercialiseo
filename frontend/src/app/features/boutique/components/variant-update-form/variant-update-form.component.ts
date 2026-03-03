@@ -6,6 +6,7 @@ import { VariantRead } from '../../../../shared/model/variant-read';
 import { finalize } from 'rxjs/operators';
 import {BoutiqueService} from '../../services/boutique.service';
 import {ToastService} from '../../../../shared/services/toast.service';
+import {environment} from '../../../../../environments/environment';
 
 interface Specification {
   id: number;
@@ -24,6 +25,8 @@ export class VariantUpdateFormComponent implements OnInit {
 
   @Input() variant!: VariantRead;
   @Input() product!: ProductRead;
+
+  public serveurUrl=environment.apiUrl;
 
   // Formulaire
   variantForm = {

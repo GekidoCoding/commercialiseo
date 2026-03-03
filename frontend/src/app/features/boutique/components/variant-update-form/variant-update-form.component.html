@@ -132,44 +132,70 @@
           </div>
         </div>
 
-        <!-- Images -->
-        <div class="form-section">
+        <!-- Section Images -->
+        <div class="form-section images-section">
           <div class="section-header">
             <label class="section-title">
               <i class="fas fa-images"></i>
               Images
+              <span class="images-count" *ngIf="(existingImages.length + newImagePreviews.length) > 0">
+                {{ existingImages.length + newImagePreviews.length }}
+              </span>
             </label>
           </div>
 
-          <!-- Images existantes -->
-          <div class="existing-images" *ngIf="existingImages.length > 0">
-            <h5>Images actuelles</h5>
-            <div class="image-grid">
-              <div class="image-item" *ngFor="let img of existingImages">
-                <img [src]="img" alt="Variant image">
-                <button type="button" class="btn-delete-image" (click)="markImageForDeletion(img)">
-                  <i class="fas fa-trash"></i>
-                </button>
+          <div class="images-body">
+
+            <!-- Images existantes -->
+            <ng-container *ngIf="existingImages.length > 0">
+              <p class="images-sub-label">
+                <i class="fas fa-check-circle"></i> Images actuelles
+              </p>
+              <div class="thumbnails-grid">
+                <div class="thumbnail-card" *ngFor="let img of existingImages">
+                  <div class="thumbnail-wrapper">
+                    <img [src]="serveurUrl + (img.url.startsWith('/') ? img.url : '/' + img.url)" alt="Image existante" class="thumbnail-img">
+                    <div class="thumbnail-overlay">
+                      <button type="button" class="btn-thumb-delete" (click)="markImageForDeletion(img)" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <span class="thumbnail-name thumbnail-name--existing">Actuelle</span>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Séparateur si les deux groupes sont présents -->
+            <div class="images-divider" *ngIf="existingImages.length > 0 && newImagePreviews.length > 0">
+              <span>Nouvelles images</span>
+            </div>
+
+            <!-- Nouvelles images prévisualisées -->
+            <div class="thumbnails-grid" *ngIf="newImagePreviews.length > 0">
+              <div class="thumbnail-card thumbnail-card--new" *ngFor="let preview of newImagePreviews; let i = index">
+                <div class="thumbnail-wrapper">
+                  <img [src]="preview" alt="Aperçu {{ i + 1 }}" class="thumbnail-img">
+                  <div class="thumbnail-overlay">
+                    <button type="button" class="btn-thumb-delete" (click)="removeNewImage(i)" title="Supprimer">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <span class="thumbnail-name thumbnail-name--new">
+                  <i class="fas fa-plus-circle"></i> Nouveau
+                </span>
               </div>
             </div>
-          </div>
 
-          <!-- Nouvelles images -->
-          <div class="upload-container">
+            <!-- Zone d'ajout -->
             <div class="upload-zone" (click)="fileInput.click()">
               <input #fileInput type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden>
-              <i class="fas fa-cloud-upload-alt"></i>
-              <p>Ajouter de nouvelles images</p>
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <p class="upload-label">Ajouter de nouvelles images</p>
+              <span class="upload-hint">PNG, JPG, WEBP · max 10 MB</span>
             </div>
 
-            <div class="image-previews" *ngIf="newImagePreviews.length > 0">
-              <div class="preview-item" *ngFor="let preview of newImagePreviews; let i = index">
-                <img [src]="preview" alt="Preview">
-                <button type="button" class="btn-remove-image" (click)="removeNewImage(i)">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 

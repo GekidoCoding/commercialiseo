@@ -6,11 +6,13 @@ import { ProductRead } from '../../../../shared/model/product-read';
 import { VariantRead } from '../../../../shared/model/variant-read';
 import { PromotionRead } from '../../../../shared/model/promotion-read';
 import { Category } from '../../../../shared/model/category';
-import { finalize, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
-import {AuthUtilService} from '../../../../shared/services/auth-util.service';
-import {VariantAddFormComponent} from '../../components/variant-add-form/variant-add-form.component';
-import {VariantUpdateFormComponent} from '../../components/variant-update-form/variant-update-form.component';
+import { AuthUtilService } from '../../../../shared/services/auth-util.service';
+import { VariantAddFormComponent } from '../../components/variant-add-form/variant-add-form.component';
+import { VariantUpdateFormComponent } from '../../components/variant-update-form/variant-update-form.component';
+import {PromotionAddFormComponent} from '../../components/promotion-add-form.component/promotion-add-form.component';
+import {PromotionUpdateFormComponent} from '../../components/promotion-update-form/promotion-update-form.component';
+import { PromotionType } from '../../../../shared/constants/promotion-type';
 
 interface StatCard {
   titre: string;
@@ -155,7 +157,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
   appliquerFiltres(): void {
     let resultats = [...this.produits];
 
-    // Recherche textuelle (nom, code, description)
     if (this.filtres.recherche.trim()) {
       const terme = this.filtres.recherche.toLowerCase();
       resultats = resultats.filter(p =>
@@ -165,14 +166,12 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Filtre catégories (multiple)
     if (this.filtres.categories.length > 0) {
       resultats = resultats.filter(p =>
         this.filtres.categories.includes(p.category._id)
       );
     }
 
-    // Filtre prix sur les variants
     if (this.filtres.prixMin !== null || this.filtres.prixMax !== null) {
       resultats = resultats.filter(p => {
         const variantsUser = this.getUserVariants(p);
@@ -185,7 +184,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Filtre stock sur les variants
     if (this.filtres.stockMin !== null || this.filtres.stockMax !== null) {
       resultats = resultats.filter(p => {
         const variantsUser = this.getUserVariants(p);
@@ -197,7 +195,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Filtre statuts (multiple)
     if (this.filtres.statuts.length > 0) {
       resultats = resultats.filter(p => {
         const variantsUser = this.getUserVariants(p);
@@ -208,7 +205,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Filtre date
     if (this.filtres.dateDebut) {
       const dateDebut = new Date(this.filtres.dateDebut);
       resultats = resultats.filter(p => new Date(p.product.releaseDate) >= dateDebut);
@@ -218,7 +214,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       resultats = resultats.filter(p => new Date(p.product.releaseDate) <= dateFin);
     }
 
-    // Filtre promotion
     if (this.filtres.enPromotion !== null) {
       resultats = resultats.filter(p => {
         const variantsUser = this.getUserVariants(p);
@@ -227,7 +222,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Filtre attributs spécifiques
     if (this.filtres.attributs.length > 0) {
       resultats = resultats.filter(p => {
         const variantsUser = this.getUserVariants(p);
@@ -241,7 +235,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Tri
     resultats = this.trierProduits(resultats);
 
     this.produitsFiltres = resultats;
@@ -311,7 +304,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       allUserVariants.push(...this.getUserVariants(p));
     });
 
-    // Calculs globaux
     this.statsGlobales.totalProduits = this.produits.length;
     this.statsGlobales.totalVariants = allUserVariants.length;
     this.statsGlobales.totalStock = allUserVariants.reduce((sum, v) => sum + (v.stock || 0), 0);
@@ -331,7 +323,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
     this.statsGlobales.stockFaible = allUserVariants.filter(v => v.stock > 0 && v.stock <= 10).length;
     this.statsGlobales.ruptureStock = allUserVariants.filter(v => v.stock === 0).length;
 
-    // Stats par catégorie
     const statsParCategorie = this.categories.map(cat => {
       const produitsCat = this.produits.filter(p => p.category._id === cat._id);
       const variantsCat = produitsCat.flatMap(p => this.getUserVariants(p));
@@ -342,7 +333,6 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       };
     });
 
-    // Mise à jour des cartes de stats
     this.statsCards = [
       {
         titre: 'Total Variants',
@@ -398,13 +388,46 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
   getPrixEffectif(variant: VariantRead): number {
     const promo = this.getActivePromotion(variant);
     if (promo) {
-      if (promo.typePromotion === 'PERCENTAGE') {
+      if (promo.typePromotion === PromotionType.REMISE) {
         return variant.price * (1 - promo.value / 100);
       } else {
+        // PRICE et DISCOUNT : montant fixe à déduire
         return Math.max(0, variant.price - promo.value);
       }
     }
     return variant.price;
+  }
+
+  /**
+   * Retourne le label formaté d'une promotion selon son type
+   */
+  getPromotionLabel(promo: PromotionRead): string {
+    switch (promo.typePromotion) {
+      case PromotionType.REMISE:
+        return `-${promo.value}%`;
+      case PromotionType.PRICE:
+        return `${promo.value}€`; // Prix fixe
+      case PromotionType.DISCOUNT:
+        return `-${promo.value}€`; // Remise fixe avec moins
+      default:
+        return `-${promo.value}€`;
+    }
+  }
+
+  /**
+   * Retourne la classe CSS pour le badge de promotion selon le type
+   */
+  getPromotionBadgeClass(promo: PromotionRead): string {
+    switch (promo.typePromotion) {
+      case PromotionType.REMISE:
+        return 'promo-percentage';
+      case PromotionType.PRICE:
+        return 'promo-fixed';
+      case PromotionType.DISCOUNT:
+        return 'promo-discount';
+      default:
+        return 'promo-default';
+    }
   }
 
   getActivePromotion(variant: VariantRead): PromotionRead | null {
@@ -543,8 +566,48 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
   }
 
   openAddPromotionModal(variant: VariantRead): void {
-    // TODO: Implémenter PromotionAddFormComponent
-    console.log('Ajouter promotion pour variant:', variant);
+    const modalRef = this.modalService.open(PromotionAddFormComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.componentInstance.variant = variant;
+
+    modalRef.result.then((result) => {
+      if (result === 'saved') {
+        this.chargerProduits();
+      }
+    }, () => {});
+  }
+
+  openUpdatePromotionModal(promotion: PromotionRead, variant: VariantRead): void {
+    const modalRef = this.modalService.open(PromotionUpdateFormComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.componentInstance.promotion = promotion;
+    modalRef.componentInstance.variant = variant;
+
+    modalRef.result.then((result) => {
+      if (result === 'saved') {
+        this.chargerProduits();
+      }
+    }, () => {});
+  }
+
+  supprimerPromotion(promotionId: string): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette promotion ?')) {
+      this.boutiqueService.deletePromotion(promotionId).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.chargerProduits();
+          }
+        }
+      });
+    }
   }
 
   supprimerVariant(variantId: string): void {

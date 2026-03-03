@@ -18,6 +18,11 @@ const promotionSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
+        // en heure (obligatoire )
+        duration: {
+            type: Number,
+            required: true,
+        },
         dateEnd: {
             type: Date,
             required: true,

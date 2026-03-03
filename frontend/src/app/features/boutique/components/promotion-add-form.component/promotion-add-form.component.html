@@ -1,0 +1,356 @@
+<div class="modal-overlay">
+  <div class="modal-container">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-percent"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="modal-title">Nouvelle Promotion</h2>
+          <p class="modal-subtitle">Appliquer une réduction sur un variant</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Erreur -->
+    <div *ngIf="errorMessage" class="alert alert-danger m-3">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form class="form-produit">
+
+        <!-- Section Variant (Read-only) -->
+        <div class="form-section variant-readonly-section">
+          <div class="section-header">
+            <label class="section-title">
+              <i class="fas fa-cube"></i>
+              Variant concerné
+            </label>
+          </div>
+
+          <div class="variant-readonly-body">
+
+            <!-- Code du variant -->
+            <div class="readonly-field">
+              <label class="readonly-label">
+                <i class="fas fa-barcode"></i>
+                Code Variant
+              </label>
+              <div class="readonly-value">
+                <span class="code-chip">{{ variantCode }}</span>
+                <i class="fas fa-lock readonly-lock"></i>
+              </div>
+            </div>
+
+            <!-- Prix de base -->
+            <div class="readonly-field">
+              <label class="readonly-label">
+                <i class="fas fa-euro-sign"></i>
+                Prix de base
+              </label>
+              <div class="readonly-value">
+                <span class="price-chip">{{ variant.price | currency:'EUR' }}</span>
+                <i class="fas fa-lock readonly-lock"></i>
+              </div>
+            </div>
+
+            <!-- Attributs spécifiques -->
+            <div class="readonly-field readonly-field--full" *ngIf="variantSpecificAttributes.length > 0">
+              <label class="readonly-label">
+                <i class="fas fa-list-ul"></i>
+                Attributs spécifiques
+              </label>
+              <div class="readonly-attributes">
+                <span class="attr-chip" *ngFor="let attr of variantSpecificAttributes">
+                  <span class="attr-key">{{ attr.key }}</span>
+                  <span class="attr-sep">:</span>
+                  <span class="attr-val">{{ attr.value }}</span>
+                </span>
+                <i class="fas fa-lock readonly-lock readonly-lock--attrs"></i>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Section Promotion -->
+        <div class="form-section">
+          <div class="section-header">
+            <label class="section-title">
+              <i class="fas fa-tag"></i>
+              Paramètres de la promotion
+            </label>
+          </div>
+
+          <div class="promo-form-body">
+
+            <!-- Type de promotion -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-sliders-h"></i>
+                Type de réduction <span class="required">*</span>
+              </label>
+              <div class="type-selector">
+                <label class="type-option" [class.selected]="promotionForm.typePromotion === PromotionType.REMISE">
+                  <input type="radio"
+                         name="typePromotion"
+                         [value]="PromotionType.REMISE"
+                         [(ngModel)]="promotionForm.typePromotion"
+                         [ngModelOptions]="{standalone: true}"
+                         (change)="calculerApercu()">
+                  <span class="type-icon"><i class="fas fa-percent"></i></span>
+                  <span class="type-label">Remise (%)</span>
+                  <span class="type-example">Ex : -20%</span>
+                </label>
+                <label class="type-option" [class.selected]="promotionForm.typePromotion === PromotionType.PRICE">
+                  <input type="radio"
+                         name="typePromotion"
+                         [value]="PromotionType.PRICE"
+                         [(ngModel)]="promotionForm.typePromotion"
+                         [ngModelOptions]="{standalone: true}"
+                         (change)="calculerApercu()">
+                  <span class="type-icon"><i class="fas fa-euro-sign"></i></span>
+                  <span class="type-label">Prix fixe</span>
+                  <span class="type-example">Ex : -5 €</span>
+                </label>
+                <label class="type-option" [class.selected]="promotionForm.typePromotion === PromotionType.DISCOUNT">
+                  <input type="radio"
+                         name="typePromotion"
+                         [value]="PromotionType.DISCOUNT"
+                         [(ngModel)]="promotionForm.typePromotion"
+                         [ngModelOptions]="{standalone: true}"
+                         (change)="calculerApercu()">
+                  <span class="type-icon"><i class="fas fa-minus-circle"></i></span>
+                  <span class="type-label">Remise fixe</span>
+                  <span class="type-example">Ex : -5 €</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Valeur de la réduction -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-tag"></i>
+                Valeur
+                <span class="required">*</span>
+                <span class="form-hint" *ngIf="promotionForm.typePromotion === PromotionType.REMISE">(max 100%)</span>
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  [(ngModel)]="promotionForm.value"
+                  [ngModelOptions]="{standalone: true}"
+                  class="form-input"
+                  [class.is-invalid]="promotionForm.value === null || promotionForm.value <= 0 || (promotionForm.typePromotion === PromotionType.REMISE && promotionForm.value > 100)"
+                  [placeholder]="promotionForm.typePromotion === PromotionType.REMISE ? 'Ex : 20' : 'Ex : 5.00'"
+                  min="0.01"
+                  [max]="promotionForm.typePromotion === PromotionType.REMISE ? 100 : null"
+                  step="0.01"
+                  (input)="calculerApercu()">
+                <div class="input-line"></div>
+                <i class="input-icon fas"
+                   [class.fa-percent]="promotionForm.typePromotion === PromotionType.REMISE"
+                   [class.fa-euro-sign]="promotionForm.typePromotion !== PromotionType.REMISE"></i>
+                <span class="input-suffix">
+                  {{ promotionForm.typePromotion === PromotionType.REMISE ? '%' : '€' }}
+                </span>
+              </div>
+              <div class="invalid-feedback" *ngIf="promotionForm.value === null || promotionForm.value <= 0">
+                La valeur est requise et doit être supérieure à 0
+              </div>
+              <div class="invalid-feedback" *ngIf="promotionForm.typePromotion === PromotionType.REMISE && promotionForm.value !== null && promotionForm.value > 100">
+                La remise ne peut pas dépasser 100%
+              </div>
+            </div>
+
+            <!-- Aperçu du prix après réduction -->
+            <div class="price-preview" *ngIf="prixAvecPromo !== null">
+              <div class="price-preview-inner">
+                <i class="fas fa-eye"></i>
+                <span class="preview-label">Prix après réduction :</span>
+                <span class="preview-original">{{ variant.price | currency:'EUR' }}</span>
+                <i class="fas fa-arrow-right preview-arrow"></i>
+                <span class="preview-new">{{ prixAvecPromo | currency:'EUR' }}</span>
+                <span class="preview-economy">
+                  - {{ promotionForm.typePromotion === PromotionType.REMISE
+                  ? promotionForm.value + ' %'
+                  : (promotionForm.value | currency:'EUR') + ' (remise fixe)' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Mode de saisie des dates -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-clock"></i>
+                Durée de la promotion <span class="required">*</span>
+              </label>
+              <div class="type-selector">
+                <label class="type-option" [class.selected]="dateInputMode === 'dates'">
+                  <input type="radio"
+                         name="dateInputMode"
+                         value="dates"
+                         [(ngModel)]="dateInputMode"
+                         [ngModelOptions]="{standalone: true}"
+                         (change)="onDateModeChange('dates')">
+                  <span class="type-icon"><i class="fas fa-calendar-alt"></i></span>
+                  <span class="type-label">Dates précises</span>
+                </label>
+                <label class="type-option" [class.selected]="dateInputMode === 'duration'">
+                  <input type="radio"
+                         name="dateInputMode"
+                         value="duration"
+                         [(ngModel)]="dateInputMode"
+                         [ngModelOptions]="{standalone: true}"
+                         (change)="onDateModeChange('duration')">
+                  <span class="type-icon"><i class="fas fa-hourglass-half"></i></span>
+                  <span class="type-label">Durée (jours)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Champ Durée avec unité -->
+            <div class="form-group" *ngIf="dateInputMode === 'duration'">
+              <label class="form-label">
+                <i class="fas fa-hourglass-half"></i>
+                Durée <span class="required">*</span>
+              </label>
+              <div class="input-row">
+                <div class="input-wrapper duration-input">
+                  <input
+                    type="number"
+                    [(ngModel)]="promotionForm.duration"
+                    [ngModelOptions]="{standalone: true}"
+                    class="form-input"
+                    [class.is-invalid]="!promotionForm.duration || promotionForm.duration <= 0"
+                    placeholder="Ex : 7"
+                    min="1"
+                    step="1">
+                  <div class="input-line"></div>
+                </div>
+                <select class="form-control duration-unit-select" [(ngModel)]="durationUnit" name="durationUnit">
+                  <option value="hours">heures</option>
+                  <option value="days">jours</option>
+                  <option value="months">mois</option>
+                </select>
+              </div>
+              <small class="form-text text-muted" *ngIf="promotionForm.duration && promotionForm.duration > 0">
+                = {{ convertDurationToHours(promotionForm.duration, durationUnit) }} heures
+              </small>
+              <div class="invalid-feedback" *ngIf="!promotionForm.duration || promotionForm.duration <= 0">
+                La durée est requise et doit être supérieure à 0
+              </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="form-row" *ngIf="dateInputMode === 'dates'">
+              <div class="form-group half">
+                <label class="form-label">
+                  <i class="fas fa-calendar-alt"></i>
+                  Date de début <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="promotionForm.dateBegin"
+                    [ngModelOptions]="{standalone: true}"
+                    class="form-input form-input--date"
+                    [class.is-invalid]="(promotionForm.dateBegin && !promotionForm.dateEnd) || (!promotionForm.dateBegin && promotionForm.dateEnd) || (promotionForm.dateBegin && promotionForm.dateEnd && promotionForm.dateBegin >= promotionForm.dateEnd)"
+                    (change)="calculerApercu()">
+                  <div class="input-line"></div>
+                </div>
+                <!-- Erreur : dateBegin rempli mais pas dateEnd -->
+                <div class="invalid-feedback" *ngIf="promotionForm.dateBegin && !promotionForm.dateEnd">
+                  La date de fin est requise
+                </div>
+                <!-- Erreur : dateEnd rempli mais pas dateBegin -->
+                <div class="invalid-feedback" *ngIf="!promotionForm.dateBegin && promotionForm.dateEnd">
+                  La date de début est requise car la date de fin est renseignée
+                </div>
+                <!-- Erreur : dateBegin >= dateEnd -->
+                <div class="invalid-feedback" *ngIf="promotionForm.dateBegin && promotionForm.dateEnd && promotionForm.dateBegin >= promotionForm.dateEnd">
+                  Doit être avant la date de fin
+                </div>
+              </div>
+
+              <div class="form-group half">
+                <label class="form-label">
+                  <i class="fas fa-calendar-check"></i>
+                  Date de fin <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="promotionForm.dateEnd"
+                    [ngModelOptions]="{standalone: true}"
+                    class="form-input form-input--date"
+                    [class.is-invalid]="(promotionForm.dateEnd && !promotionForm.dateBegin) || (promotionForm.dateBegin && promotionForm.dateEnd && promotionForm.dateBegin >= promotionForm.dateEnd)"
+                    [min]="getDateMinFin()"
+                    (change)="calculerApercu()">
+                  <div class="input-line"></div>
+                </div>
+                <!-- Erreur : dateEnd rempli mais pas dateBegin -->
+                <div class="invalid-feedback" *ngIf="promotionForm.dateEnd && !promotionForm.dateBegin">
+                  La date de début est requise
+                </div>
+                <!-- Erreur : dateBegin rempli mais pas dateEnd -->
+                <div class="invalid-feedback" *ngIf="!promotionForm.dateEnd && promotionForm.dateBegin">
+                  La date de fin est requise car la date de début est renseignée
+                </div>
+                <!-- Erreur : dateBegin >= dateEnd -->
+                <div class="invalid-feedback" *ngIf="promotionForm.dateBegin && promotionForm.dateEnd && promotionForm.dateBegin >= promotionForm.dateEnd">
+                  Doit être après la date de début
+                </div>
+              </div>
+            </div>
+
+            <!-- Alerte durée invalide -->
+            <div class="alert alert-warning" *ngIf="dateInputMode === 'dates' && promotionForm.dateBegin && promotionForm.dateEnd && promotionForm.dateBegin >= promotionForm.dateEnd">
+              <i class="fas fa-exclamation-circle"></i>
+              La date de fin doit être postérieure à la date de début.
+            </div>
+
+            <!-- Alerte pourcentage dépassé -->
+            <div class="alert alert-warning"
+                 *ngIf="promotionForm.typePromotion === PromotionType.REMISE && promotionForm.value !== null && promotionForm.value > 100">
+              <i class="fas fa-exclamation-circle"></i>
+              Un pourcentage de réduction ne peut pas dépasser 100 %.
+            </div>
+
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-info">
+        <span class="required-hint"><span class="dot"></span> Champs obligatoires</span>
+      </div>
+      <div class="footer-actions">
+        <button type="button" class="btn btn-secondary" (click)="onClose()">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+        <button type="button" class="btn btn-primary"
+                (click)="onSave()"
+                [disabled]="!isFormValid() || isSubmitting">
+          <i class="fas"
+             [class.fa-check]="!isSubmitting"
+             [class.fa-spinner]="isSubmitting"
+             [class.fa-spin]="isSubmitting"></i>
+          {{ isSubmitting ? 'Création...' : 'Créer la Promotion' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
