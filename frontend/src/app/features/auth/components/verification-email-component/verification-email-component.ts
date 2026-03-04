@@ -1,9 +1,9 @@
-import {Component, Input, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import {AuthService} from '../../services/auth-service';
-import {LoginComponent} from '../login-component/login-component';
-import {RegisterComponent} from '../register-component/register-component';
-import {ToastService} from '../../../../shared/services/toast.service';
+import { AuthService } from '../../services/auth-service';
+import { LoginComponent } from '../login-component/login-component';
+import { RegisterComponent } from '../register-component/register-component';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-email-verification',
@@ -32,7 +32,7 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.startTimer();
@@ -223,7 +223,6 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
           // 1. Fermer le modal de vérification
           this.modalService.dismissAll();
           this.toastService.success(' Compte créé avec succès ! ');
-          alert("");
           this.openConnexion();
         }, 3000);
       },
@@ -278,10 +277,12 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
       this.email = newEmail;
       this.showError = false;
       this.errorMessage = '';
-      alert('Email mis à jour. Un nouveau code va vous être envoyé.');
+      // alert('Email mis à jour. Un nouveau code va vous être envoyé.');
+      this.toastService.success('Email mis à jour. Un nouveau code va vous être envoyé.');
       this.onResendCode(new Event('click'));
     } else if (newEmail) {
-      alert('Adresse email invalide');
+      // alert('Adresse email invalide');
+      this.toastService.error('Adresse email invalide');
     }
   }
 
@@ -291,8 +292,8 @@ export class VerificationEmailComponent implements OnInit, OnDestroy {
 
   onResendCode(event: Event): void {
     event.preventDefault();
-    console.log( "resend code :"+this.email);
-    this.authService.sendCodePassword(this.email,false).subscribe({
+    console.log("resend code :" + this.email);
+    this.authService.sendCodePassword(this.email, false).subscribe({
       next: (response) => {
         this.isSubmitting = false;
         console.log('envoi réussie:', response);
