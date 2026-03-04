@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProduitsAddFormComponent } from '../../components/produit/produits-add-form/produits-add-form.component';
+import { ProduitsUpdateFormComponent } from '../../components/produit/produits-update-form/produits-update-form.component';
 import { AdminService } from '../../services/admin.service';
 import {ProductRead} from '../../../../shared/model/product-read';
 
@@ -72,7 +73,8 @@ export class ProduitsListComponent implements OnInit {
 
   constructor(
     public modalService: NgbModal,
-    private adminService: AdminService
+    private adminService: AdminService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -81,6 +83,8 @@ export class ProduitsListComponent implements OnInit {
 
   chargerProduits(): void {
     this.isLoading = true;
+    this.cdr.detectChanges(); // Force detection pour afficher le loading
+    
     this.errorMessage = '';
 
     this.adminService.findAllProducts()
@@ -92,14 +96,17 @@ export class ProduitsListComponent implements OnInit {
             this.extraireCategories();
             this.calculerStatistiques();
             this.appliquerFiltres();
-            this.isLoading = false;
           } else {
             this.errorMessage = 'Erreur lors du chargement des produits';
           }
+          this.isLoading = false;
+          this.cdr.detectChanges(); // Force detection après chargement
         },
         error: (error) => {
           this.errorMessage = error.message || 'Une erreur est survenue lors du chargement';
           console.error('Erreur chargement produits:', error);
+          this.isLoading = false;
+          this.cdr.detectChanges(); // Force detection après erreur
         }
       });
   }
@@ -148,6 +155,7 @@ export class ProduitsListComponent implements OnInit {
       scoresSante,
       topCategories
     };
+    this.cdr.detectChanges(); // Force detection après stats
   }
 
   extraireCategories(): void {
@@ -183,6 +191,7 @@ export class ProduitsListComponent implements OnInit {
     this.pageActuelle = 1;
     this.produitsSelectionnes = []; // Reset sélection
     this.selectionnerTous = false;
+    this.cdr.detectChanges(); // Force detection après filtrage
   }
 
   getStatutFromQuantite(quantite: number): string {
@@ -318,6 +327,25 @@ export class ProduitsListComponent implements OnInit {
     modal.result.then(
       (result) => {
         if (result === 'saved') {
+          this.chargerProduits();
+        }
+      },
+      () => {} // Dismiss
+    );
+  }
+
+  openUpdateModal(produit: ProductRead): void {
+    const options = { size: 'lg' };
+    const modal = this.modalService.open(ProduitsUpdateFormComponent, options);
+
+    // Passer le produit à modifier au composant
+    const componentInstance = modal.componentInstance as ProduitsUpdateFormComponent;
+    componentInstance.setProduitToEdit(produit);
+
+    // Recharger après fermeture si produit modifié
+    modal.result.then(
+      (result) => {
+        if (result === 'updated') {
           this.chargerProduits();
         }
       },

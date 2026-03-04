@@ -8,7 +8,7 @@ const acheteurController = {
         asyncHandler(async (req, res) => {
             const result = await productService.findAll();
             if (!result.success) {
-                return errorResponse(res, result.error, result.code || 500);
+                return errorResponse(res, result.error,  500);
             }
             return res.status(200).json(result, 'Liste des produits récupérée avec succès');
         }),

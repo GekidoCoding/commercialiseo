@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {NgbActiveModal, NgbToast} from '@ng-bootstrap/ng-bootstrap';
@@ -23,6 +23,7 @@ export class CategorieFormComponent implements OnInit {
     private activeModal: NgbActiveModal,
     private categorieService: PublicService ,
     private toastService: ToastService,
+    private cdr: ChangeDetectorRef
     // Injection du service
   ) {}
 
@@ -33,6 +34,7 @@ export class CategorieFormComponent implements OnInit {
   resetForm(): void {
     this.categorie = {
       _id: '', name: '', unity: '' };
+    this.cdr.detectChanges();
   }
 
   // Fermer le modal
@@ -51,7 +53,7 @@ export class CategorieFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors de la création:', error);
-        // Gestion d'erreur optionnelle ici
+        this.cdr.detectChanges();
       }
     });
   }

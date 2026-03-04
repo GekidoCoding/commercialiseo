@@ -70,7 +70,7 @@ const boutiqueController={
             const { userId } = req.params;
             const result = await productService.findAllForUserReal(userId);
             if (!result.success) {
-                return errorResponse(res, result.error, result.code || 500);
+                return errorResponse(res, result.error,  500);
             }
             return res.status(200).json(result, 'Liste des produits filtrée récupérée avec succès');
         }),

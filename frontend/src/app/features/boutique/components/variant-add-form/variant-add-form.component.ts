@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { PublicService } from '../../../../shared/services/public.service';
 import { Product } from '../../../../shared/model/product';
@@ -58,7 +58,8 @@ export class VariantAddFormComponent implements OnInit {
     private publicService: PublicService,
     private authService: AuthUtilService,
     private elementRef: ElementRef,
-    private toastr : ToastService
+    private toastr : ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
   ngOnInit(): void {
     this.chargerProduits();
@@ -66,18 +67,25 @@ export class VariantAddFormComponent implements OnInit {
 
   chargerProduits(): void {
     this.isLoadingProducts = true;
+    this.cdr.detectChanges(); // Force detection pour loading
+    
     this.publicService.findAllProductsReal()
-      .pipe(finalize(() => this.isLoadingProducts = false))
+      .pipe(finalize(() => {
+        this.isLoadingProducts = false;
+        this.cdr.detectChanges(); // Force detection après fin loading
+      }))
       .subscribe({
         next: (response) => {
           if (response.success) {
             console.log("produits in boutiques :"+ response);
             this.produits = response.data || [];
             console.log(response.data);
+            this.cdr.detectChanges(); // Force detection après chargement
           }
         },
         error: (error) => {
           this.errorMessage = 'Erreur lors du chargement des produits';
+          this.cdr.detectChanges();
         }
       });
   }
@@ -92,6 +100,7 @@ export class VariantAddFormComponent implements OnInit {
       this.produitsFiltres = [];
       this.showAutocomplete = false;
       this.produitSelectionne = null; // Réinitialise la sélection
+      this.cdr.detectChanges();
       return;
     }
 
@@ -106,12 +115,14 @@ export class VariantAddFormComponent implements OnInit {
     ).slice(0, 10);
 
     this.showAutocomplete = this.produitsFiltres.length > 0;
+    this.cdr.detectChanges(); // Force detection après recherche
   }
 
   selectionnerProduit(produit: Product): void {
     this.produitSelectionne = produit;
     this.rechercheProduit = produit.name;
     this.showAutocomplete = false;
+    this.cdr.detectChanges();
   }
 
   // ==================== SPÉCIFICATIONS ====================
@@ -130,16 +141,19 @@ export class VariantAddFormComponent implements OnInit {
       value: '',
       isEditing: true
     });
+    this.cdr.detectChanges(); // Force detection après ajout
   }
 
   confirmSpecification(spec: Specification): void {
     if (spec.name.trim() && spec.value.trim()) {
       spec.isEditing = false;
+      this.cdr.detectChanges();
     }
   }
 
   removeSpecification(id: number): void {
     this.specifications = this.specifications.filter(s => s.id !== id);
+    this.cdr.detectChanges();
   }
 
   // ==================== UPLOAD FICHIERS ====================
@@ -200,6 +214,7 @@ export class VariantAddFormComponent implements OnInit {
 
     this.isSubmitting = true;
     this.errorMessage = null;
+    this.cdr.detectChanges(); // Force detection pour afficher loading
 
     const formData = new FormData();
 
@@ -223,7 +238,10 @@ export class VariantAddFormComponent implements OnInit {
     });
 
     this.boutiqueService.createVariantWithFiles(formData)
-      .pipe(finalize(() => this.isSubmitting = false))
+      .pipe(finalize(() => {
+        this.isSubmitting = false;
+        this.cdr.detectChanges(); // Force detection après fin soumission
+      }))
       .subscribe({
         next: (response) => {
           if (response.success) {
@@ -231,10 +249,12 @@ export class VariantAddFormComponent implements OnInit {
             this.activeModal.close('saved');
           } else {
             this.errorMessage = response.message || 'Erreur lors de la création';
+            this.cdr.detectChanges();
           }
         },
         error: (error) => {
           this.errorMessage = error.message || 'Une erreur est survenue';
+          this.cdr.detectChanges(); // Force detection après erreur
         }
       });
   }

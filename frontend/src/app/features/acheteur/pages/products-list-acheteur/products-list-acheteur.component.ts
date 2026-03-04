@@ -86,6 +86,8 @@ export class ProductsListAcheteurComponent implements OnInit, OnDestroy {
 
   loadProducts(): void {
     this.isLoading = true;
+    this.cdr.detectChanges(); // Force detection pour afficher le loading
+    
     this.acheteurService.findAllProductsForClient()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -101,10 +103,12 @@ export class ProductsListAcheteurComponent implements OnInit, OnDestroy {
             this.toastr.error('Erreur lors du chargement des produits');
           }
           this.isLoading = false;
+          this.cdr.detectChanges(); // Force detection après chargement
         },
         error: (error) => {
           this.toastr.error('Erreur de connexion au serveur');
           this.isLoading = false;
+          this.cdr.detectChanges(); // Force detection après erreur
         }
       });
   }
@@ -151,6 +155,7 @@ export class ProductsListAcheteurComponent implements OnInit, OnDestroy {
     ).subscribe(term => {
       this.filters.searchTerm = term;
       this.applyFilters();
+      this.cdr.detectChanges(); // Force detection après recherche
     });
   }
 
@@ -170,6 +175,7 @@ export class ProductsListAcheteurComponent implements OnInit, OnDestroy {
 
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
+    this.cdr.detectChanges(); // Force detection après toggle
   }
 
   onFilterChange(): void {
@@ -178,6 +184,7 @@ export class ProductsListAcheteurComponent implements OnInit, OnDestroy {
 
   addAttributeFilter(): void {
     this.filters.attributes.push({ key: '', value: '' });
+    this.cdr.detectChanges(); // Force detection après ajout
   }
 
   removeAttributeFilter(index: number): void {
@@ -276,6 +283,7 @@ export class ProductsListAcheteurComponent implements OnInit, OnDestroy {
     }
 
     this.filteredProducts = result;
+    this.cdr.detectChanges(); // Force detection après filtrage
   }
 
   // ==================== PRÉDÉFINITIONS ====================

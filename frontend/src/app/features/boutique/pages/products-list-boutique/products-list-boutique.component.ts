@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BoutiqueService } from '../../services/boutique.service';
 import { PublicService } from '../../../../shared/services/public.service';
@@ -104,7 +104,8 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
     private boutiqueService: BoutiqueService,
     private publicService: PublicService,
     private authService: AuthUtilService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -126,6 +127,7 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
       next: (response) => {
         if (response.success) {
           this.categories = response.data || [];
+          this.cdr.detectChanges();
         }
       }
     });
@@ -133,6 +135,8 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
 
   chargerProduits(): void {
     this.isLoading = true;
+    this.cdr.detectChanges(); // Force detection pour afficher le loading
+    
     console.log("userId in charging products boutique :" + this.currentUserId);
     this.boutiqueService.findAllProductsForUser(this.currentUserId)
       .subscribe({
@@ -143,11 +147,13 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
             this.isLoading = false;
             this.appliquerFiltres();
             this.calculerStatistiques();
-            this.isLoading = false;
           }
+          this.cdr.detectChanges(); // Force detection après chargement
         },
         error: (error) => {
           console.error('Erreur chargement produits:', error);
+          this.isLoading = false;
+          this.cdr.detectChanges(); // Force detection après erreur
         }
       });
   }
@@ -240,6 +246,7 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
     this.produitsFiltres = resultats;
     this.calculerPagination();
     this.pageActuelle = 1;
+    this.cdr.detectChanges(); // Force detection après filtrage
   }
 
   trierProduits(produits: ProductRead[]): ProductRead[] {
@@ -377,6 +384,7 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
         sousTitre: `${this.categories.length} total`
       }
     ];
+    this.cdr.detectChanges(); // Force detection après stats
   }
 
   // ==================== UTILITAIRES ====================
@@ -475,6 +483,7 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
     } else {
       this.expandedProducts.add(productId);
     }
+    this.cdr.detectChanges();
   }
 
   isProductExpanded(productId: string): boolean {
@@ -487,6 +496,7 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
     } else {
       this.expandedVariants.add(variantId);
     }
+    this.cdr.detectChanges();
   }
 
   isVariantExpanded(variantId: string): boolean {
@@ -646,6 +656,7 @@ export class ProductsListBoutiqueComponent implements OnInit, OnDestroy {
 
   ajouterFiltreAttribut(): void {
     this.filtres.attributs.push({ cle: '', valeur: '' });
+    this.cdr.detectChanges();
   }
 
   supprimerFiltreAttribut(index: number): void {

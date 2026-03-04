@@ -455,12 +455,12 @@
           <td class="col-date">{{ produit.product.releaseDate | date:'dd/MM/yyyy' }}</td>
           <td class="col-actions">
             <div class="action-buttons">
-              <button class="btn-action btn-edit" title="Modifier">
+              <button class="btn-action btn-edit" (click)="openUpdateModal(produit)" title="Modifier">
                 <i class="fas fa-pen"></i>
               </button>
-              <button class="btn-action btn-delete" (click)="supprimerProduit(produit._id!)" title="Supprimer">
-                <i class="fas fa-trash"></i>
-              </button>
+<!--              <button class="btn-action btn-delete" (click)="supprimerProduit(produit._id!)" title="Supprimer">-->
+<!--                <i class="fas fa-trash"></i>-->
+<!--              </button>-->
             </div>
           </td>
         </tr>

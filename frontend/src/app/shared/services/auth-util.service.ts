@@ -46,12 +46,12 @@ export class AuthUtilService {
 
   /**
    * Récupère l'utilisateur connecté depuis le storage
-   * Si vide, effectue logout et retourne null
+   * Retourne null si vide (sans logout automatique)
    */
   getUserFromStorage(): User | null {
     const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
     if (!userData) {
-      this.logout();
+      // On ne fait pas logout ici, car le guard gérera la redirection
       return null;
     }
 
@@ -65,7 +65,7 @@ export class AuthUtilService {
       return user;
     } catch (error) {
       console.error('Erreur lors de la récupération des données utilisateur', error);
-      this.logout();
+      // On ne fait pas logout ici non plus
       return null;
     }
   }
@@ -74,11 +74,11 @@ export class AuthUtilService {
   }
   /**
    * Vérifie si le token est valide via verifyToken
+   * Ne fait PAS logout automatiquement - laisse le guard gérer
    */
   async verifyToken(): Promise<boolean> {
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     if (!token) {
-      this.logout();
       return false;
     }
 
@@ -88,11 +88,9 @@ export class AuthUtilService {
         return true;
       }
       console.warn('Token invalide');
-      this.logout();
       return false;
     } catch (error) {
       console.error('Erreur lors de la vérification du token', error);
-      this.logout();
       return false;
     }
   }
@@ -100,14 +98,46 @@ export class AuthUtilService {
 
 
   /**
-   * Déconnexion
+   * Déconnexion avec nettoyage complet du storage
    */
   logout(): void {
+    // Nettoyer TOUS les items du localStorage et sessionStorage
+    this.clearAllStorage();
+
+    // Redirection vers la page d'authentification
+    this.router.navigate(['/auth']).then(r => console.log(r));
+  }
+
+  /**
+   * Nettoie complètement tout le storage
+   */
+  clearAllStorage(): void {
+    // Supprimer les clés spécifiques
     localStorage.removeItem('authToken');
     sessionStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     sessionStorage.removeItem('userData');
-    this.router.navigate(['/auth']).then(r => console.log(r));
+    localStorage.removeItem('cart_variants');
+    sessionStorage.removeItem('cart_variants');
+
+    // Nettoyer toutes les autres clés potentielles
+    const keysToKeep: string | string[] = [];
+
+    // Supprimer toutes les clés du localStorage
+    Object.keys(localStorage).forEach(key => {
+      if (!keysToKeep.includes(key)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Supprimer toutes les clés du sessionStorage
+    Object.keys(sessionStorage).forEach(key => {
+      if (!keysToKeep.includes(key)) {
+        sessionStorage.removeItem(key);
+      }
+    });
+
+    console.log('Storage complètement nettoyé');
   }
 
   /**

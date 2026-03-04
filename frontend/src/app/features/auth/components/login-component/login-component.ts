@@ -73,6 +73,9 @@ export class LoginComponent implements OnInit {
 
     this.isSubmitting = true;
 
+    // Nettoyer TOUT le storage avant de se connecter
+    this.authUtil.clearAllStorage();
+
     this.authService.login(this.email, this.password, this.rememberMe).subscribe({
       next: async (response: any) => {
         this.isSubmitting = false;

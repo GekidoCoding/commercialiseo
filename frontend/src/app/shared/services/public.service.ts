@@ -8,6 +8,7 @@ import {catchError} from 'rxjs/operators';
 import {throwError} from 'rxjs';
 import {Category} from '../model/category';
 import {ProductRead} from '../model/product-read';
+import {PushNotification} from '../model/push-notification';
 @Injectable({
   providedIn: 'root',
 })
@@ -42,6 +43,22 @@ export class PublicService {
       .pipe(catchError(this.handleError));
   }
 
+
+  /**
+   * Récupère les notifications d'un utilisateur
+   */
+  findNotificationsByUserId(userId: string): Observable<ApiResponse<PushNotification[]>> {
+    return this.http.get<ApiResponse<PushNotification[]>>(`${this.apiUrl}/notifications/user/${userId}`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Marque une notification comme lue
+   */
+  markNotificationAsRead(notificationId: string): Observable<ApiResponse<PushNotification>> {
+    return this.http.patch<ApiResponse<PushNotification>>(`${this.apiUrl}/notifications/${notificationId}/read`, {})
+      .pipe(catchError(this.handleError));
+  }
 
   /**
    * Gestion des erreurs

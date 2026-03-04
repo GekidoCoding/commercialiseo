@@ -6,7 +6,7 @@
     <div class="nav-actions desktop-only">
 
       <!-- Panier -->
-      <div class="action-wrapper">
+      <div class="action-wrapper" *ngIf="userConnected?.role=='acheteur'">
         <button class="nav-action-btn" (click)="toggleCart($event)" [class.active]="cartOpen()" aria-label="Panier">
           <i class="fas fa-shopping-cart"></i>
           <span class="badge badge-green" *ngIf="cartCount() > 0">
@@ -131,14 +131,30 @@
             </button>
           </div>
           <div class="panel-body">
-            <ul class="notif-list">
-              <li *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
-                <span class="notif-icon">{{ notif.icon }}</span>
+            <!-- Loading state -->
+            <div *ngIf="notificationsLoading" class="notifications-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Chargement des notifications...</p>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="!notificationsLoading && notifications.length === 0" class="panel-empty">
+              <span class="empty-icon">🔔</span>
+              <p>Aucune notification</p>
+            </div>
+
+            <!-- Liste des notifications -->
+            <ul *ngIf="!notificationsLoading && notifications.length > 0" class="notif-list">
+              <li *ngFor="let notif of notifications"
+                  class="notif-item"
+                  [class.unread]="!notif.isRead"
+                  (click)="markNotificationAsRead(notif)">
+                <span class="notif-icon">{{ getCategoryIcon(notif.category) }}</span>
                 <div class="notif-info">
-                  <p class="notif-text">{{ notif.text }}</p>
-                  <span class="notif-time">{{ notif.time }}</span>
+                  <p class="notif-text">{{ notif.message }}</p>
+                  <span class="notif-time">{{ formatNotificationTime(notif.createdAt) }}</span>
                 </div>
-                <span class="unread-dot" *ngIf="!notif.read"></span>
+                <span class="unread-dot" *ngIf="!notif.isRead"></span>
               </li>
             </ul>
           </div>
@@ -166,8 +182,8 @@
             </div>
           </div>
           <ul class="user-menu-list">
-            <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>
-            <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>
+<!--            <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>-->
+<!--            <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>-->
           </ul>
           <div class="user-panel-footer">
             <button class="logout-btn" (click)="logout()">
@@ -192,8 +208,8 @@
           </div>
         </div>
         <ul class="user-menu-list">
-          <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>
-          <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>
+<!--          <li><a routerLink="/profil"     (click)="userMenuOpen.set(false)"><i class="fas fa-user"></i> Mon profil</a></li>-->
+<!--          <li><a routerLink="/parametres" (click)="userMenuOpen.set(false)"><i class="fas fa-cog"></i> Paramètres</a></li>-->
         </ul>
         <div class="user-panel-footer">
           <button class="logout-btn" (click)="logout()">
@@ -249,14 +265,30 @@
         <button class="mark-read-btn" (click)="markAllRead()" *ngIf="notifCount() > 0">Tout marquer lu</button>
       </div>
       <div class="panel-body">
-        <ul class="notif-list">
-          <li *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
-            <span class="notif-icon">{{ notif.icon }}</span>
+        <!-- Loading state -->
+        <div *ngIf="notificationsLoading" class="notifications-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Chargement des notifications...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!notificationsLoading && notifications.length === 0" class="panel-empty">
+          <span class="empty-icon">🔔</span>
+          <p>Aucune notification</p>
+        </div>
+
+        <!-- Liste des notifications -->
+        <ul *ngIf="!notificationsLoading && notifications.length > 0" class="notif-list">
+          <li *ngFor="let notif of notifications"
+              class="notif-item"
+              [class.unread]="!notif.isRead"
+              (click)="markNotificationAsRead(notif)">
+            <span class="notif-icon">{{ getCategoryIcon(notif.category) }}</span>
             <div class="notif-info">
-              <p class="notif-text">{{ notif.text }}</p>
-              <span class="notif-time">{{ notif.time }}</span>
+              <p class="notif-text">{{ notif.message }}</p>
+              <span class="notif-time">{{ formatNotificationTime(notif.createdAt) }}</span>
             </div>
-            <span class="unread-dot" *ngIf="!notif.read"></span>
+            <span class="unread-dot" *ngIf="!notif.isRead"></span>
           </li>
         </ul>
       </div>
