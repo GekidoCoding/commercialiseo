@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { CategorieFormComponent } from '../../categorie/categorie-form/categorie-form.component';
@@ -47,7 +47,8 @@ export class ProduitsAddFormComponent implements OnInit {
     private modalService: NgbModal,
     private adminService: AdminService,
     private publicService: PublicService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -60,21 +61,28 @@ export class ProduitsAddFormComponent implements OnInit {
    */
   loadCategories(): void {
     this.isLoadingCategories = true;
+    this.cdr.detectChanges(); // Force detection pour loading
+    
     this.publicService.findAllCategories()
-      .pipe(finalize(() => this.isLoadingCategories = false))
+      .pipe(finalize(() => {
+        this.isLoadingCategories = false;
+        this.cdr.detectChanges(); // Force detection après fin loading
+      }))
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
-
             this.categories = response.data;
             console.log(this.categories);
+            this.cdr.detectChanges(); // Force detection après chargement
           } else {
             this.errorMessage = 'Erreur lors du chargement des catégories';
+            this.cdr.detectChanges();
           }
         },
         error: (error) => {
           console.error('Erreur chargement catégories:', error);
           this.errorMessage = 'Impossible de charger les catégories';
+          this.cdr.detectChanges(); // Force detection après erreur
         }
       });
   }
@@ -139,11 +147,13 @@ export class ProduitsAddFormComponent implements OnInit {
             this.loadCategories();
           } else {
             this.errorMessage = response.message || 'Erreur lors de la suppression';
+            this.cdr.detectChanges();
           }
         },
         error: (error) => {
           console.error('Erreur suppression catégorie:', error);
           this.errorMessage = error.message || 'Impossible de supprimer la catégorie';
+          this.cdr.detectChanges();
         }
       });
     }
@@ -160,6 +170,7 @@ export class ProduitsAddFormComponent implements OnInit {
     this.nextSpecId = 1;
     this.isSubmitting = false;
     this.errorMessage = null;
+    this.cdr.detectChanges(); // Force detection après reset
   }
 
   /**
@@ -217,16 +228,19 @@ export class ProduitsAddFormComponent implements OnInit {
       value: '',
       isEditing: true
     });
+    this.cdr.detectChanges(); // Force detection après ajout
   }
 
   confirmSpecification(spec: Specification): void {
     if (spec.name.trim() && spec.value.trim()) {
       spec.isEditing = false;
+      this.cdr.detectChanges();
     }
   }
 
   removeSpecification(id: number): void {
     this.specifications = this.specifications.filter(s => s.id !== id);
+    this.cdr.detectChanges();
   }
 
   /**
@@ -274,6 +288,7 @@ export class ProduitsAddFormComponent implements OnInit {
 
     this.isSubmitting = true;
     this.errorMessage = null;
+    this.cdr.detectChanges(); // Force detection pour afficher loading
 
     const productData: Product = {
       _id: '',
@@ -286,19 +301,25 @@ export class ProduitsAddFormComponent implements OnInit {
     };
 
     this.adminService.createProduct(productData)
-      .pipe(finalize(() => this.isSubmitting = false))
+      .pipe(finalize(() => {
+        this.isSubmitting = false;
+        this.cdr.detectChanges(); // Force detection après fin soumission
+      }))
       .subscribe({
         next: (response) => {
           if (response.success) {
             console.log('Produit créé avec succès:', response.data);
             this.toastService.success('Produit créé avec succès');
+            this.onClose();
           } else {
             this.errorMessage = response.message || 'Erreur lors de la création du produit';
+            this.cdr.detectChanges();
           }
         },
         error: (error) => {
           console.error('Erreur création produit:', error);
           this.errorMessage = error.message || 'Une erreur est survenue lors de la création';
+          this.cdr.detectChanges(); // Force detection après erreur
         }
       });
   }

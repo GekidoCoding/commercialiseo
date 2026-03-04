@@ -37,33 +37,6 @@ app.use(cors(corsOptions));
 // Compression
 app.use(compression());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limite chaque IP à 100 requêtes par fenêtre
-  message: {
-    success: false,
-    message: 'Trop de requêtes, veuillez réessayer plus tard',
-    timestamp: new Date().toISOString(),
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api/', limiter);
-
-// Stricter rate limit for auth endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: {
-    success: false,
-    message: 'Trop de tentatives d\'authentification, veuillez réessayer plus tard',
-    timestamp: new Date().toISOString(),
-  },
-});
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register-request', authLimiter);
-
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

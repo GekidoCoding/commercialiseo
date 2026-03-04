@@ -11,6 +11,8 @@ import {AuthUtilService} from '../../services/auth-util.service';
 import {User} from '../../../features/auth/models/User';
 import {AcheteurService} from '../../../features/acheteur/services/acheteur.service';
 import {ToastService} from '../../services/toast.service';
+import {NotificationService} from '../../services/notification.service';
+import {PushNotification} from '../../model/push-notification';
 
 const CART_KEY = 'cart_variants';
 
@@ -50,13 +52,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isSubmittingOrder = false;
 
   // ── Données mock ──────────────────────────────────────
-  notifications = [
-    { id: 1, text: 'Nouvelle commande reçue',      time: 'Il y a 2 min', read: false, icon: '🛒' },
-    { id: 2, text: 'Votre produit a été expédié',  time: 'Il y a 1h',    read: false, icon: '📬' },
-    { id: 3, text: 'Promotion disponible',          time: 'Il y a 3h',    read: false, icon: '🎉' },
-    { id: 4, text: 'Paiement confirmé',             time: 'Hier',         read: true,  icon: '✅' },
-    { id: 5, text: 'Nouveau message',               time: 'Hier',         read: true,  icon: '💬' },
-  ];
+  notifications: PushNotification[] = [];
+  notificationsLoading = false;
 
   userConnected: User |null = null;
 
@@ -66,7 +63,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(private cartEventService: CartEventService,
               private authService: AuthUtilService,
               private acheteurService: AcheteurService,
-              private toastService: ToastService
+              private toastService: ToastService,
+              private notificationService: NotificationService
               ) {}
   ngOnInit(): void {
     this.userConnected= this.authService.getUserFromStorage();
@@ -75,6 +73,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.cartEventService.cartUpdated
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadCartFromStorage());
+
+    // Charger les notifications UNE SEULE FOIS au démarrage
+    if (this.userConnected && this.userConnected.id) {
+      this.loadNotifications();
+    }
 
     // Synchronisation multi-onglets
     this.storageListener = (e: StorageEvent) => {
@@ -103,6 +106,41 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.cartItems = [];
     }
     this.cartCount.set(this.cartItems.length);
+  }
+
+  /** Charge les notifications depuis l'API */
+  loadNotifications(): void {
+    if (!this.userConnected || !this.userConnected.id) {
+      this.notifications = [];
+      this.notifCount.set(0);
+      return;
+    }
+
+    this.notificationsLoading = true;
+    this.notificationService.getUserNotifications().subscribe({
+      next: (response) => {
+        this.notificationsLoading = false;
+        if (response.success && response.data) {
+          this.notifications = response.data;
+          this.updateNotifCount();
+        } else {
+          this.notifications = [];
+          this.notifCount.set(0);
+        }
+      },
+      error: (error) => {
+        this.notificationsLoading = false;
+        console.error('Erreur chargement notifications:', error);
+        this.notifications = [];
+        this.notifCount.set(0);
+      }
+    });
+  }
+
+  /** Met à jour le compteur de notifications non lues */
+  updateNotifCount(): void {
+    const unreadCount = this.notificationService.getUnreadCount(this.notifications);
+    this.notifCount.set(unreadCount);
   }
 
   /** Sauvegarde le panier dans localStorage ET sessionStorage */
@@ -285,6 +323,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.closeOrderModal();
           this.cartItems = [];
           this.saveCart();
+          
+          // Rafraîchir les notifications APRÈS l'achat (acheteur seulement)
+          if (this.userConnected?.role === 'acheteur') {
+            setTimeout(() => {
+              this.loadNotifications();
+            }, 500);
+          }
         } else {
           // Le backend a renvoyé success: false
           this.passwordError = response.message || 'Une erreur est survenue lors de l\'achat.';
@@ -343,8 +388,69 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   markAllRead(): void {
-    this.notifications.forEach(n => n.read = true);
-    this.notifCount.set(0);
+    if (this.notifications.length === 0) return;
+
+    this.notificationService.markAllAsRead(this.notifications).then(() => {
+      this.toastService.success('Toutes les notifications ont été marquées comme lues');
+      this.loadNotifications(); // Recharger pour afficher l'état à jour
+    }).catch((error) => {
+      console.error('Erreur lors du marquage des notifications:', error);
+      this.toastService.error('Erreur lors du marquage des notifications');
+    });
+  }
+
+  /** Marque une notification individuelle comme lue */
+  markNotificationAsRead(notification: PushNotification): void {
+    if (notification.isRead || !notification._id) return;
+
+    this.notificationService.markAsRead(notification._id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          notification.isRead = true;
+          this.updateNotifCount();
+        }
+      },
+      error: (error) => {
+        console.error('Erreur lors du marquage de la notification:', error);
+      }
+    });
+  }
+
+  /** Retourne l'icône selon la catégorie de notification */
+  getCategoryIcon(category?: string): string {
+    if (!category) return '🔔';
+    
+    const icons: { [key: string]: string } = {
+      'PURCHASE': '🛒',
+      'PAYMENT': '💳',
+      'SHIPPING': '📦',
+      'PROMOTION': '🎉',
+      'MESSAGE': '💬',
+      'STOCK': '⚠️',
+      'ORDER': '📋'
+    };
+    
+    return icons[category] || '🔔';
+  }
+
+  /** Formate le temps écoulé depuis la création */
+  formatNotificationTime(dateString?: string): string {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMinutes < 1) return "À l'instant";
+    if (diffMinutes < 60) return `Il y a ${diffMinutes} min`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    if (diffDays === 1) return 'Hier';
+    if (diffDays < 7) return `Il y a ${diffDays} jours`;
+    
+    return date.toLocaleDateString('fr-FR');
   }
 
   getUserInitials(): string {
@@ -352,7 +458,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.router.navigate(['/login']);
+    const confirmed = confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+    if (confirmed) {
+      this.authService.logout();
+    }
   }
 
   // ════════════════════════════════════════════════════

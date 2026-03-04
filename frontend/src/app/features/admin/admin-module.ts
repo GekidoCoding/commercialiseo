@@ -8,13 +8,15 @@ import {RouterModule} from '@angular/router';
 import {CategorieFormComponent} from './components/categorie/categorie-form/categorie-form.component';
 import {ProduitsListComponent} from './pages/produits-list/produits-list.component';
 import {ProduitsAddFormComponent} from './components/produit/produits-add-form/produits-add-form.component';
+import {ProduitsUpdateFormComponent} from './components/produit/produits-update-form/produits-update-form.component';
 
 @NgModule({
   declarations: [
     TestAdmin,
     ProduitsAddFormComponent,
     CategorieFormComponent,
-    ProduitsListComponent
+    ProduitsListComponent,
+    ProduitsUpdateFormComponent
   ],
   imports: [
     CommonModule,

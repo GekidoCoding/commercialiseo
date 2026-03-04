@@ -16,7 +16,7 @@ const adminController = {
             });
 
             if (!result.success) {
-                return errorResponse(res, result.error, result.code || 500);
+                return errorResponse(res, result.error,  500);
             }
 
             //  On répond immédiatement à l'utilisateur
@@ -35,14 +35,14 @@ const adminController = {
      */
     updateProduct: [
         asyncHandler(async (req, res) => {
-            const { name, categoryId, code, specs, releaseDate } = req.body;
+            const {_id, name, categoryId, code, specs, releaseDate } = req.body;
 
             const result = await productService.updateProduct({
-                name, categoryId, code, specs, releaseDate
+               _id, name, categoryId, code, specs, releaseDate
             });
 
             if (!result.success) {
-                return errorResponse(res, result.error, result.code || 500);
+                return errorResponse(res, result.error,  500);
             }
 
             //  On répond immédiatement à l'utilisateur
@@ -63,7 +63,7 @@ const adminController = {
         asyncHandler(async (req, res) => {
             const result = await productService.findAll();
             if (!result.success) {
-                return errorResponse(res, result.error, result.code || 500);
+                return errorResponse(res, result.error,  500);
             }
             return res.status(200).json(result, 'Liste des produits récupérée avec succès');
         }),

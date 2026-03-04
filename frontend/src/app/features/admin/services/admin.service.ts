@@ -27,7 +27,7 @@ export class AdminService {
    * Met à jour un produit
    */
   updateProduct(product: Product): Observable<ApiResponse<Product>> {
-    return this.http.post<ApiResponse<Product>>(`${this.apiUrl}/update-product`, product)
+    return this.http.put<ApiResponse<Product>>(`${this.apiUrl}/update-product`, product)
       .pipe(catchError(this.handleError));
   }
 

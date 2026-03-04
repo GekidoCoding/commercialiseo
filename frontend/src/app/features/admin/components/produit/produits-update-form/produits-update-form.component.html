@@ -1,0 +1,301 @@
+<!-- Overlay du modal -->
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+
+  <div class="modal-container">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-edit"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="modal-title">Modifier le Produit</h2>
+          <p class="modal-subtitle">Mettre à jour les informations du produit</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Message d'erreur global -->
+    <div *ngIf="errorMessage" class="alert alert-danger m-3">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form #produitForm="ngForm" class="form-produit">
+
+        <!-- Section Informations -->
+        <div class="form-section">
+
+          <!-- Nom -->
+          <div class="form-group">
+            <label for="nom" class="form-label">
+              <i class="fas fa-tag"></i>
+              Nom du produit <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="nom"
+                name="nom"
+                [(ngModel)]="produit.nom"
+                class="form-input"
+                placeholder="Ex: iPhone 14 Pro..."
+                required>
+              <div class="input-line"></div>
+              <i class="fas fa-box input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Catégorie -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-folder"></i>
+              Catégorie <span class="required">*</span>
+            </label>
+            <div class="categorie-wrapper">
+              <div class="input-wrapper custom-select-container">
+
+                <!-- Trigger du select -->
+                <div
+                  class="custom-select-trigger"
+                  [class.active]="isDropdownOpen"
+                  [class.disabled]="isLoadingCategories"
+                  (click)="toggleDropdown()">
+                  <i class="fas fa-folder trigger-icon"></i>
+                  <span class="trigger-text" [class.selected]="produit.categorieId">
+                    {{ getSelectedCategoryName() || (isLoadingCategories ? 'Chargement...' : 'Sélectionner une catégorie') }}
+                  </span>
+                  <i class="fas fa-chevron-down select-arrow"></i>
+                </div>
+
+                <div class="input-line"></div>
+
+                <!-- Dropdown des options -->
+                <div class="custom-select-dropdown" *ngIf="isDropdownOpen && !isLoadingCategories">
+
+                  <!-- Option vide -->
+                  <div
+                    class="custom-option empty"
+                    *ngIf="categories.length === 0">
+                    Aucune catégorie disponible
+                  </div>
+
+                  <!-- Liste des catégories -->
+                  <div
+                    class="custom-option"
+                    *ngFor="let cat of categories"
+                    [class.selected]="produit.categorieId === cat._id"
+                    (click)="selectCategory(cat._id)">
+
+                    <!-- Icône de suppression - GRIS ET PEU VISIBLE -->
+                    <button
+                      type="button"
+                      class="delete-category-icon"
+                      (click)="deleteCategory($event, cat)"
+                      title="Supprimer la catégorie '{{ cat.name }}'">
+                      <i class="fas fa-trash"></i>
+                    </button>
+
+                    <span class="option-text">{{ cat.name }}</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Bouton d'ajout -->
+              <button
+                type="button"
+                class="btn-add-category"
+                (click)="openCategorieModal()"
+                title="Ajouter une catégorie">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Code -->
+          <div class="form-group">
+            <label for="code" class="form-label">
+              <i class="fas fa-barcode"></i>
+              Code produit <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="code"
+                name="code"
+                [(ngModel)]="produit.code"
+                class="form-input"
+                placeholder="Ex: APL-IP14P..."
+                required>
+              <div class="input-line"></div>
+              <i class="fas fa-hashtag input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Date de sortie -->
+          <div class="form-group">
+            <label for="dateSortie" class="form-label">
+              <i class="fas fa-calendar"></i>
+              Date de sortie <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="date"
+                id="dateSortie"
+                name="dateSortie"
+                [(ngModel)]="produit.dateSortie"
+                class="form-input"
+                required>
+              <div class="input-line"></div>
+              <i class="fas fa-calendar-alt input-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Spécifications -->
+        <div class="form-section specifications-section">
+          <div class="section-header">
+            <label class="section-title">
+              <i class="fas fa-list-ul"></i>
+              Spécifications techniques
+            </label>
+            <span class="section-hint">
+              Définissez les caractéristiques du produit.
+              <br><small class="text-muted">Pour les tableaux, utilisez le format: ["valeur1", "valeur2"]</small>
+            </span>
+          </div>
+
+          <!-- Tableau des spécifications -->
+          <div class="table-container">
+            <table class="specifications-table">
+              <thead>
+              <tr>
+                <th class="col-name">Nom (clé)</th>
+                <th class="col-value">Valeur</th>
+                <th class="col-actions"></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                *ngFor="let spec of specifications"
+                class="spec-row"
+                [class.editing]="spec.isEditing">
+
+                <!-- Nom -->
+                <td class="col-name">
+                  <ng-container *ngIf="spec.isEditing; else nameReadonly">
+                    <input
+                      type="text"
+                      [(ngModel)]="spec.name"
+                      [name]="'spec-name-' + spec.id"
+                      class="table-input"
+                      placeholder="Ex: screenSize..."
+                      (blur)="confirmSpecification(spec)"
+                      (keyup.enter)="confirmSpecification(spec)">
+                  </ng-container>
+                  <ng-template #nameReadonly>
+                      <span class="spec-name" (click)="spec.isEditing = true">
+                        {{ spec.name }}
+                      </span>
+                  </ng-template>
+                </td>
+
+                <!-- Valeur -->
+                <td class="col-value">
+                  <ng-container *ngIf="spec.isEditing; else valueReadonly">
+                    <input
+                      type="text"
+                      [(ngModel)]="spec.value"
+                      [name]="'spec-value-' + spec.id"
+                      class="table-input"
+                      placeholder='Ex: 6.1 inches ou ["128GB", "256GB"]...'
+                      (blur)="confirmSpecification(spec)"
+                      (keyup.enter)="confirmSpecification(spec)">
+                  </ng-container>
+                  <ng-template #valueReadonly>
+                      <span class="spec-value" (click)="spec.isEditing = true">
+                        {{ spec.value }}
+                      </span>
+                  </ng-template>
+                </td>
+
+                <!-- Actions -->
+                <td class="col-actions">
+                  <button
+                    type="button"
+                    class="btn-delete-row"
+                    (click)="removeSpecification(spec.id)"
+                    title="Supprimer cette spécification">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- État vide -->
+              <tr *ngIf="specifications.length === 0" class="empty-row">
+                <td colspan="3">
+                  <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>Aucune spécification</p>
+                    <span>Cliquez sur + pour ajouter</span>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+
+            <!-- Bouton Ajouter -->
+            <button
+              type="button"
+              class="btn-add-spec"
+              (click)="addSpecification()">
+              <span>Ajouter une spécification</span>
+              <small>Cliquez en dehors pour confirmer</small>
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-info">
+        <span class="required-hint"><span class="dot"></span> Champs obligatoires</span>
+        <button
+          type="button"
+          class="btn btn-reset"
+          (click)="resetForm()"
+          title="Réinitialiser le formulaire">
+          <i class="fas fa-undo"></i>
+          Réinitialiser
+        </button>
+      </div>
+      <div class="footer-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onClose()">
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onSave()"
+          [disabled]="!isFormValid() || isSubmitting || isLoadingCategories">
+          <i class="fas" [class.fa-check]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
+          {{ isSubmitting ? 'Enregistrement...' : 'Mettre à jour le produit' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

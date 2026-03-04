@@ -19,6 +19,7 @@ class ProductService{
 
     async updateProduct(productData) {
         try {
+            console.log("productData in update product :"+JSON.stringify(productData) );
             const { _id, ...updateData } = productData;
             const product = await Product.findByIdAndUpdate(
                 _id,

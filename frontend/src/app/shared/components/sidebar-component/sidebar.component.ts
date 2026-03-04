@@ -30,7 +30,6 @@ export class SidebarComponent implements OnInit {
   // ── État Mobile (drawer) ──────────────────────
   isMobile   = false;
   mobileOpen = false;
-
   // Pour le positionnement des flyouts
   private itemPositions: Map<string, number> = new Map();
 
@@ -56,6 +55,7 @@ export class SidebarComponent implements OnInit {
 
   private loadMenu(): void {
     const user = this.authUtilService.getUserFromStorage();
+
     if (user) {
       this.userConnected = user;
       this.menu          = this.navService.getMenuByRoleAndModule(user.role);
@@ -151,8 +151,10 @@ export class SidebarComponent implements OnInit {
   }
 
   logout(): void {
-    this.authUtilService.logout();
-    this.router.navigate(['/login']);
+    const confirmed = confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+    if (confirmed) {
+      this.authUtilService.logout();
+    }
   }
 
   getUserInitials(): string {
